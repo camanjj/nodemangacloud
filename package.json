@@ -1,0 +1,20 @@
+{
+  "name": "mangacloud",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+    "author": "Cameron Jackson",
+  "dependencies": {
+    "express": "3.4.7",
+    "jade": "0.35.0",
+    "request": "2.30.0",
+    "numeral": "1.5.2",
+    "cheerio": "0.12.4"
+  },
+  "subdomain": "mangacloud",
+  "engines": {
+    "node": "0.10.x"
+  }
+}
