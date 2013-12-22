@@ -1,4 +1,4 @@
-
+require('newrelic');//sends data to new relic
 /**
  * Module dependencies.
  */

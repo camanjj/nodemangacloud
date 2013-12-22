@@ -1,6 +1,6 @@
 {
   "name": "mangacloud",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "scripts": {
     "start": "node app.js"
@@ -11,7 +11,8 @@
     "jade": "0.35.0",
     "request": "2.30.0",
     "numeral": "1.5.2",
-    "cheerio": "0.12.4"
+    "cheerio": "0.12.4",
+    "newrelic": "1.2.0"
   },
   "subdomain": "mangacloud",
   "engines": {
