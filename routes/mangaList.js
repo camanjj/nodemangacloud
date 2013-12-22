@@ -1,5 +1,5 @@
 /**
- * Created by cameronjackson on 12/19/13.
+ * Created by Camanjj
  */
 
 
@@ -13,37 +13,57 @@ var qs = require('querystring');
 
 var loginUrl = 'http://www.batoto.net/forums/index.php?app=core&module=global&section=login&do=process';
 
-
-
-//returns the updates list
+/**
+ *  gets the updates list
+ *  @property req.headers.cookie - set lang_option to something to get things in certain language
+ */
 exports.updates = function(req, res){
 
     fetchPage('http://www.batoto.net', req, res, parseUpdates);
 
 };
 
-
-//returns the manga information
+/**
+ * get the manga information for a selected manga
+ * @param req - the request sent to the server
+ * @property req.params.page - the page to the manga information page
+ */
 exports.info = function(req, res){
-
 
     if(!req.query.page){
         res.status(400);
         res.send('Missing paramater page');
     } else {
-    fetchPage(req.query.page, req, res, parseInfo);
+        fetchPage(req.query.page, req, res, parseInfo);
     }
 
 };
 
 
-//returns the pages to manga chapter
+/**
+ * gets the links for the pages in a manga chapter
+ * @param {Request} req - the request
+ * @property {String} req.query.page - the link to the first page in the manga chapter
+ *
+ */
 exports.read = function(req, res){
-    fetchPage(req.query.page, req, res, getPages)
-}
+
+    if(!req.query.page){
+        res.status(400);
+        res.send('Missing paramater page');
+    } else {
+        fetchPage(req.query.page, req, res, getPages)
+    }
+};
 
 
-//logs into batoto.net
+/**
+ * logs into batoto.net and returns JSON for all the credentials needed
+ *
+ * @param {Request} req - request only required params are uname and pword
+ * @returns {String} JSON object giving all the credentials needed to continue being the specified user
+ *
+ * */
 exports.login = function(req, res){
 
     var body = '';
@@ -67,10 +87,17 @@ exports.login = function(req, res){
     });
 }
 
-//TODO: Need to add documentation to the api
+
+/**
+ *  follows or unfollows a manga
+ *  @param {Request} req - request hat has the cookies for credentialing
+ *  @property {object} req.headers.cookie -  cookies need for credentialing
+ *  @property {object} params.action - follow/unfollow
+ *  @property {object} params.sKey - the key needed to follow manga
+ *  @property {object} params.session - the seesion id for the user
+ */
 exports.follow = function(req, res){
 
-    var cookies = req.headers.cookie;
     var body = '';
     req.on('data', function (data) {
         body += data;
@@ -87,7 +114,6 @@ exports.follow = function(req, res){
 
         //to follow set do equal to save, to unfollow set do equal to unset
         var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', params.session, action, params.sKey, params.rid);
-        console.log(url);
         fetchPage(url, req, res, function(response, body){
 
 
@@ -110,25 +136,6 @@ exports.follow = function(req, res){
 
 
 };
-
-function gunzipData(response){
-
-    var gunzip = zlib.createGunzip();
-    var json = "";
-
-    gunzip.on('data', function(data){
-        json += data.toString();
-    });
-
-    gunzip.on('end', function(){
-//        console.log(json);
-        return (json);
-    });
-
-
-    var buffer = response.pipe(gunzip);
-    console.log(buffer);
-}
 
 
 function fetchPage(url, req, jsonResponse, callback, method, postBody, stringCookies){
@@ -234,6 +241,13 @@ function parseInfo(response, body){
     var manga = new Object();
     var infoTable = $('.ipsBox');
     manga.image = infoTable.find('img').first().attr('src');
+
+
+    //if the user if signed in then it shows if the user is currently following the manga or not
+    var followingSection = $('div.__like.right a').first();
+    if(followingSection.length > 0){
+        manga.following = followingSection.text().indexOf('Unfollow') !== -1;
+    }
 
 
     //collectes the manga information from the table
@@ -406,7 +420,6 @@ function parseLogin(response, body, cookies){
         var queryString = link.substring(link.indexOf('?')+1);
         var object = qs.parse(queryString);
         //object['k'] is the secret key needed
-        console.log((jar[0]));
         jar['key'] = object['k'];
         jsonResponse.send(jar);
 
