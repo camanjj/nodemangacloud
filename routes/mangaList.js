@@ -7,15 +7,23 @@ var cheerio = require('cheerio');
 var request = require('request');
 var zlib = require('zlib');
 var numeral = require('numeral');
+var util = require('util');
+var qs = require('querystring');
+
+
+var loginUrl = 'http://www.batoto.net/forums/index.php?app=core&module=global&section=login&do=process';
 
 
 
+//returns the updates list
 exports.updates = function(req, res){
 
     fetchPage('http://www.batoto.net', req, res, parseUpdates);
 
 };
 
+
+//returns the manga information
 exports.info = function(req, res){
 
 
@@ -28,9 +36,80 @@ exports.info = function(req, res){
 
 };
 
+
+//returns the pages to manga chapter
 exports.read = function(req, res){
     fetchPage(req.query.page, req, res, getPages)
 }
+
+
+//logs into batoto.net
+exports.login = function(req, res){
+
+    var body = '';
+    req.on('data', function (data) {
+        body += data;
+        // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+        if (body.length > 1e6) {
+            // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+            request.connection.destroy();
+        }
+    });
+    req.on('end', function () {
+        var POST = qs.parse(body);
+        var formData = new Object();
+        formData.auth_key = '880ea6a14ea49e853634fbdc5015a024';
+        formData.referer = 'http://www.batoto.net/forums/';
+        formData.rememberMe = 1;
+        formData.ips_password = POST.pword;
+        formData.ips_username = POST.uname;
+        fetchPage(loginUrl, req, res, parseLogin, 'POST', formData);
+    });
+}
+
+//TODO: Need to add documentation to the api
+exports.follow = function(req, res){
+
+    var cookies = req.headers.cookie;
+    var body = '';
+    req.on('data', function (data) {
+        body += data;
+        // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+        if (body.length > 1e6) {
+            // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+            request.connection.destroy();
+        }
+    });
+    req.on('end', function () {
+        var params = qs.parse(body);
+
+        var action = params.action === ('follow') ? 'save' : 'unset';
+
+        //to follow set do equal to save, to unfollow set do equal to unset
+        var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', params.session, action, params.sKey, params.rid);
+        console.log(url);
+        fetchPage(url, req, res, function(response, body){
+
+
+            //stores the html in a cheerio object
+            var $ = cheerio.load(body);
+            var text = $('a').first().text();
+
+            if(action === 'save'){
+                //returns bool representing if the follow was a success
+                response.send(text === 'Unfollow');
+            }else{
+                //returns bool representing if the unfollow was a success
+                response.send(text === 'Follow');
+            }
+
+        },'POST');
+
+    });
+
+
+
+};
 
 function gunzipData(response){
 
@@ -52,18 +131,23 @@ function gunzipData(response){
 }
 
 
-function fetchPage(url, req, jsonResponse, callback){
+function fetchPage(url, req, jsonResponse, callback, method, postBody, stringCookies){
+
+    method = method === null ? 'GET' : 'POST';
 
     var cookies;
 
     if(req != null){
 
         cookies =  req.headers.cookie;
+    } else {
+        cookies = stringCookies;
     }
 
 
     var options = {
         uri: url,
+        method: method,
         headers: {
             'content-type': 'text/html; charset=utf-8',
             'Accept' :'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -73,14 +157,17 @@ function fetchPage(url, req, jsonResponse, callback){
         encoding : null
     };
 
+    if(postBody != null)
+        options.form = postBody;
+
     request(options, function(error, response, body){
 
-        if (!error && response.statusCode == 200) {
+        if (!error) {
 
             zlib.unzip(body, function(err, buffer) {
-                if (!err) {
+                if (!err && (response.statusCode == 200 || response.statusCode == 302)) {
                     var html = buffer.toString();
-                    callback(jsonResponse, html);
+                    callback(jsonResponse, html, response.headers['set-cookie']);
                 }
             });
         }
@@ -88,7 +175,6 @@ function fetchPage(url, req, jsonResponse, callback){
 }
 
 function parseUpdates(response, body){
-
     var $ = cheerio.load(body);
 
     var mpis = [];
@@ -290,4 +376,39 @@ function getPages(response, body){
 
     }
 
+}
+
+function parseLogin(response, body, cookies){
+
+    var str = cookies.toString();
+    if(str.indexOf('pass_hash') === -1){
+       response.statusCode = 400;
+        response.send('Error Logging in. Check Credentials');
+        return;
+    }
+
+    console.log('signed in');
+
+    var jar = new Object();
+    var ckString = [];
+    for(x  in cookies){
+
+        var ck = (cookies[x].substring(0, cookies[x].indexOf(';')));
+        ckString.push(ck);
+        var split_arr = ck.split('=');
+        jar[split_arr[0]] = split_arr[1];
+    }
+
+    fetchPage('http://www.batoto.net/',null,response, function(jsonResponse, html){
+        var $ = cheerio.load(html);
+        var logoutLink = $('#logout_link').first();
+        var link = logoutLink.attr('href');
+        var queryString = link.substring(link.indexOf('?')+1);
+        var object = qs.parse(queryString);
+        //object['k'] is the secret key needed
+        console.log((jar[0]));
+        jar['key'] = object['k'];
+        jsonResponse.send(jar);
+
+    }, 'GET', null, ckString.join('; '));
 }
