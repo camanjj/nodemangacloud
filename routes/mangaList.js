@@ -34,7 +34,7 @@ exports.info = function(req, res){
         res.status(400);
         res.send('Missing paramater page');
     } else {
-        fetchPage(req.query.page, req, res, parseInfo);
+        fetchPage(req.query.page, req, res, parseInfo, 'GET');
     }
 
 };
@@ -52,7 +52,7 @@ exports.read = function(req, res){
         res.status(400);
         res.send('Missing paramater page');
     } else {
-        fetchPage(req.query.page, req, res, getPages)
+        fetchPage(req.query.page, req, res, getPages, 'GET');
     }
 };
 
@@ -66,25 +66,37 @@ exports.read = function(req, res){
  * */
 exports.login = function(req, res){
 
+    var b = req.body.uname;
     var body = '';
-    req.on('data', function (data) {
-        body += data;
-        // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-        if (body.length > 1e6) {
-            // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
-            request.connection.destroy();
-        }
-    });
-    req.on('end', function () {
-        var POST = qs.parse(body);
+
+    if(!b){
+        req.on('data', function (data) {
+            body += data;
+            // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+            if (body.length > 1e6) {
+                // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+                request.connection.destroy();
+            }
+        });
+        req.on('end', function () {
+            var POST = qs.parse(body);
+            var formData = new Object();
+            formData.auth_key = '880ea6a14ea49e853634fbdc5015a024';
+            formData.referer = 'http://www.batoto.net/forums/';
+            formData.rememberMe = 1;
+            formData.ips_password = POST.pword;
+            formData.ips_username = POST.uname;
+            fetchPage(loginUrl, req, res, parseLogin, 'POST', formData);
+        });
+    } else {
         var formData = new Object();
         formData.auth_key = '880ea6a14ea49e853634fbdc5015a024';
         formData.referer = 'http://www.batoto.net/forums/';
         formData.rememberMe = 1;
-        formData.ips_password = POST.pword;
-        formData.ips_username = POST.uname;
+        formData.ips_password = req.body.pword;
+        formData.ips_username = req.body.uname;
         fetchPage(loginUrl, req, res, parseLogin, 'POST', formData);
-    });
+    }
 }
 
 
@@ -140,7 +152,6 @@ exports.follow = function(req, res){
 
 function fetchPage(url, req, jsonResponse, callback, method, postBody, stringCookies){
 
-    method = method === null ? 'GET' : 'POST';
 
     var cookies;
 
@@ -211,8 +222,8 @@ function parseUpdates(response, body){
             var chapter = new Object();
             var info = $(this).find('td a').first();
 
-            chapter.link = info.text();
-            chapter.title = info.attr('href');
+            chapter.title = info.text();
+            chapter.link = info.attr('href');
 
             chapter.language = self.find('td div').attr('title');
 
@@ -239,8 +250,12 @@ function parseInfo(response, body){
 
     var $ = cheerio.load(body);
     var manga = new Object();
+
+    manga.title = $('.ipsType_pagetitle').first().text().trim();
+
     var infoTable = $('.ipsBox');
     manga.image = infoTable.find('img').first().attr('src');
+
 
 
     //if the user if signed in then it shows if the user is currently following the manga or not
@@ -401,7 +416,6 @@ function parseLogin(response, body, cookies){
         return;
     }
 
-    console.log('signed in');
 
     var jar = new Object();
     var ckString = [];
