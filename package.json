@@ -1,6 +1,6 @@
 {
   "name": "mangacloud",
-  "version": "0.0.5-2",
+  "version": "0.0.6-2",
   "private": true,
   "scripts": {
     "start": "node app.js"

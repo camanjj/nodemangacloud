@@ -97,7 +97,7 @@ exports.login = function(req, res){
         formData.ips_username = req.body.uname;
         fetchPage(loginUrl, req, res, parseLogin, 'POST', formData);
     }
-}
+};
 
 
 /**
@@ -105,27 +105,57 @@ exports.login = function(req, res){
  *  @param {Request} req - request hat has the cookies for credentialing
  *  @property {object} req.headers.cookie -  cookies need for credentialing
  *  @property {object} params.action - follow/unfollow
+ *  @property {strng} params.rid - the id for the manga
  *  @property {object} params.sKey - the key needed to follow manga
  *  @property {object} params.session - the seesion id for the user
  */
 exports.follow = function(req, res){
 
+    var key = req.body.sKey;
     var body = '';
-    req.on('data', function (data) {
-        body += data;
-        // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-        if (body.length > 1e6) {
-            // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
-            request.connection.destroy();
-        }
-    });
-    req.on('end', function () {
-        var params = qs.parse(body);
 
-        var action = params.action === ('follow') ? 'save' : 'unset';
+    if(!key){
+        req.on('data', function (data) {
+            body += data;
+            // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+            if (body.length > 1e6) {
+                // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+                request.connection.destroy();
+            }
+        });
+        req.on('end', function () {
+            var params = qs.parse(body);
+
+            var action = params.action === ('follow') ? 'save' : 'unset';
+
+            //to follow set do equal to save, to unfollow set do equal to unset
+            var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', params.session, action, params.sKey, params.rid);
+            fetchPage(url, req, res, function(response, body){
+
+
+                //stores the html in a cheerio object
+                var $ = cheerio.load(body);
+                var text = $('a').first().text();
+
+                if(action === 'save'){
+                    //returns bool representing if the follow was a success
+                    response.send(text === 'Unfollow');
+                }else{
+                    //returns bool representing if the unfollow was a success
+                    response.send(text === 'Follow');
+                }
+
+            },'POST');
+
+        });
+    } else {
+        var action = req.body.action === ('follow') ? 'save' : 'unset';
+        var session = req.body.session;
+        var rid = req.body.rid;
+
 
         //to follow set do equal to save, to unfollow set do equal to unset
-        var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', params.session, action, params.sKey, params.rid);
+        var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', session, action, key, rid);
         fetchPage(url, req, res, function(response, body){
 
 
@@ -142,11 +172,29 @@ exports.follow = function(req, res){
             }
 
         },'POST');
-
-    });
-
+    }
 
 
+
+};
+
+/**
+ * retrieves the follow list for the user
+ */
+exports.follows = function(req, res){
+
+    fetchPage('http://www.batoto.net/myfollows', req, res, parseFollows, 'GET');
+};
+
+/**
+ *  searches for manga
+ */
+exports.search = function(req, res){
+
+    var term = req.body.term;
+    var url = util.format('http://www.batoto.net/search?name=%s&name_cond=c&dosubmit=Search', term)
+
+    fetchPage(url, req, res, parseSearch, 'GET');
 };
 
 
@@ -210,7 +258,10 @@ function parseUpdates(response, body){
             mpi.chapters = [];
             //gets the image element
             var image = $(this).find('img').first();
-            mpi.imageLink = image.attr('src');
+            var imageString = image.attr('src');
+            imageString = imageString.substring(imageString.lastIndexOf('http://'));
+            imageString = util.format('http://www.batoto.net/timthumb.php?h=%d&w=%d&src=%s', 75, 75, imageString);
+            mpi.imageLink = imageString;
 //                    console.log(mpi.imageLink);
             mpi.link = image.parent().attr('href');
 //                    console.log(mpi.link);
@@ -219,7 +270,7 @@ function parseUpdates(response, body){
 
         } else {
 
-            var chapter = new Object();
+            var chapter = {};
             var info = $(this).find('td a').first();
 
             chapter.title = info.text();
@@ -439,3 +490,73 @@ function parseLogin(response, body, cookies){
 
     }, 'GET', null, ckString.join('; '));
 }
+
+function parseFollows(response, body){
+
+    var $ = cheerio.load(body);
+    var mpis = [];
+    var mpi;
+    $('.ipb_table tr[class!=header]').each(function(i, element){
+
+        mpi = {};
+        mpi.chapters = [];
+        var chapter = {};
+        $(this).find('td').each(function(e, el){
+
+            switch (e) {
+                case 1:
+                    var title = $(this).find('a').first();
+                    mpi.title = title.text();
+                    mpi.link = title.attr('href');
+
+                    var chapterTitle = $(this).find('a').last();
+                    chapter.title = chapterTitle.text();
+                    chapter.link = chapterTitle.attr('href');
+
+                    break;
+                case 2:
+                    chapter.language = $(this).find('div').first().attr('title');
+                    break;
+                case 3:
+                    var groupTitle = $(this).find('a').first();
+                    chapter.group = groupTitle.text();
+                    chapter.groupLink = groupTitle.attr('href');
+                    break;
+                case 4:
+                    chapter.updateTime = $(this).text();
+                    break;
+            }
+
+        });
+
+        mpi.chapters.push(chapter);
+        mpis.push(mpi);
+        chapter = {};
+
+
+    });
+    response.send(mpis);
+}
+
+function parseSearch(response, body){
+
+    var $ = cheerio.load(body);
+
+    var results = [];
+    $('.ipb_table.chapters_list tr[class!=header]').each(function(i, element){
+
+        var result = {};
+
+        var title = $(this).find('a').first();
+
+        result.title = title.text();
+        result.link = title.attr('href');
+
+        if(result.title !== "")
+            results.push(result);
+
+    });
+
+    response.send(results);
+
+};

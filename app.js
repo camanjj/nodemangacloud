@@ -36,9 +36,13 @@ if ('development' == app.get('env')) {
 app.get('/read', manga.read);
 app.get('/updates', manga.updates);
 app.get('/info', manga.info);
-app.post('/info', manga.info);
+
+
 app.post('/login', manga.login);
 app.post('/follow', manga.follow);
+app.get('/follows', manga.follows);
+
+app.post('/search', manga.search);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
