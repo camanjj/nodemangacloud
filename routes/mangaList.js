@@ -163,12 +163,17 @@ exports.follow = function(req, res){
             var $ = cheerio.load(body);
             var text = $('a').first().text();
 
+            var result = {};
+
+
             if(action === 'save'){
                 //returns bool representing if the follow was a success
-                response.send(text === 'Unfollow');
+                result.success = text === 'Unfollow';
+                response.send(result);
             }else{
                 //returns bool representing if the unfollow was a success
-                response.send(text === 'Follow');
+                result.success = text === 'Follow';
+                response.send(result);
             }
 
         },'POST');
@@ -234,6 +239,9 @@ function fetchPage(url, req, jsonResponse, callback, method, postBody, stringCoo
                 if (!err && (response.statusCode == 200 || response.statusCode == 302)) {
                     var html = buffer.toString();
                     callback(jsonResponse, html, response.headers['set-cookie']);
+                }else{
+                    jsonResponse.statusCode = 400;
+                    jsonResponse.send({'Failed' : 'For some reason'});
                 }
             });
         }
@@ -300,7 +308,7 @@ function parseInfo(response, body){
 
 
     var $ = cheerio.load(body);
-    var manga = new Object();
+    var manga = {};
 
     manga.title = $('.ipsType_pagetitle').first().text().trim();
 
@@ -543,20 +551,23 @@ function parseSearch(response, body){
     var $ = cheerio.load(body);
 
     var results = [];
-    $('.ipb_table.chapters_list tr[class!=header]').each(function(i, element){
+    $('.chapters_list tr[class!=header]').each(function(i, element){
 
-        var result = {};
+        if($(this).find('td').length !== 1){
 
-        var title = $(this).find('a').first();
+            var result = {};
 
-        result.title = title.text();
-        result.link = title.attr('href');
+            var title = $(this).find('strong a').first();
 
-        if(result.title !== "")
-            results.push(result);
+            result.title = title.text();
+            result.link = title.attr('href');
+
+            if(result.title !== "")
+                results.push(result);
+        }
 
     });
 
     response.send(results);
 
-};
+}
