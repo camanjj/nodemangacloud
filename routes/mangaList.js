@@ -19,7 +19,14 @@ var loginUrl = 'http://www.batoto.net/forums/index.php?app=core&module=global&se
  */
 exports.updates = function(req, res){
 
-    fetchPage('http://www.batoto.net', req, res, parseUpdates);
+    if(!req.query.page || req.query.page === 1)
+        fetchPage('http://www.batoto.net', req, res, parseUpdates);
+    else{
+        //allows paging to the request
+        var pageLink = util.format('http://www.batoto.net?p=%d', req.query.page);
+        fetchPage(pageLink, req, res, parseUpdates);
+    }
+
 
 };
 
@@ -188,7 +195,12 @@ exports.follow = function(req, res){
  */
 exports.follows = function(req, res){
 
-    fetchPage('http://www.batoto.net/myfollows', req, res, parseFollows, 'GET');
+    if(!req.query.page || req.query.page === 1)
+        fetchPage('http://www.batoto.net/myfollows', req, res, parseFollows, 'GET');
+    else {
+        var pageLink = util.format('http://www.batoto.net/myfollows?p=%d', req.query.page);
+        fetchPage(pageLink, req, res, parseFollows, 'GET');
+    }
 };
 
 /**
