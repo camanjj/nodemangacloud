@@ -1,7 +1,6 @@
 /**
- * Created by Camanjj
+ * Created by Cameron Jackson
  */
-
 
 var cheerio = require('cheerio');
 var request = require('request');
@@ -96,7 +95,7 @@ exports.login = function(req, res){
             fetchPage(loginUrl, req, res, parseLogin, 'POST', formData);
         });
     } else {
-        var formData = new Object();
+        var formData = {};
         formData.auth_key = '880ea6a14ea49e853634fbdc5015a024';
         formData.referer = 'http://www.batoto.net/forums/';
         formData.rememberMe = 1;
@@ -274,19 +273,16 @@ function parseUpdates(response, body){
             //used to ignore the first blank row
             if(mpi != null)
                 mpis.push(mpi);
-            mpi = new Object();
+            mpi = {};
             mpi.chapters = [];
             //gets the image element
             var image = $(this).find('img').first();
             var imageString = image.attr('src');
             imageString = imageString.substring(imageString.lastIndexOf('http://'));
-            imageString = util.format('http://www.batoto.net/timthumb.php?h=%d&w=%d&src=%s', 75, 75, imageString);
+//            imageString = util.format('http://www.batoto.net/timthumb.php?h=%d&w=%d&src=%s', 50, 50, imageString);
             mpi.imageLink = imageString;
-//                    console.log(mpi.imageLink);
             mpi.link = image.parent().attr('href');
-//                    console.log(mpi.link);
             mpi.title = $(this).find('td a').last().text();
-//                    console.log(mpi.title);
 
         } else {
 
@@ -333,6 +329,7 @@ function parseInfo(response, body){
     var followingSection = $('div.__like.right a').first();
     if(followingSection.length > 0){
         manga.following = followingSection.text().indexOf('Unfollow') !== -1;
+        manga.followers = $('div.__like.right strong').first().text(); // gets the amount of people that are following the manga
     }
 
 
