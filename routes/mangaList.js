@@ -18,6 +18,7 @@ var loginUrl = 'http://www.batoto.net/forums/index.php?app=core&module=global&se
  */
 exports.updates = function(req, res){
 
+
     if(!req.query.page || req.query.page === 1)
         fetchPage('http://www.batoto.net', req, res, parseUpdates);
     else{
@@ -278,7 +279,7 @@ function parseUpdates(response, body){
             //gets the image element
             var image = $(this).find('img').first();
             var imageString = image.attr('src');
-            imageString = imageString.substring(imageString.lastIndexOf('http://'));
+//            imageString = imageString.substring(imageString.lastIndexOf('http://'));
 //            imageString = util.format('http://www.batoto.net/timthumb.php?h=%d&w=%d&src=%s', 50, 50, imageString);
             mpi.imageLink = imageString;
             mpi.link = image.parent().attr('href');

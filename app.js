@@ -7,6 +7,7 @@ var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
 var manga = require('./routes/mangaList');
+var info = require('./routes/info');
 var http = require('http');
 var path = require('path');
 
@@ -43,6 +44,9 @@ app.post('/follow', manga.follow);
 app.get('/follows', manga.follows);
 
 app.post('/search', manga.search);
+
+app.get('/version', info.version);
+app.get('/message', info.message);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
