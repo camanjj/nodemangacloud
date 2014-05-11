@@ -20,7 +20,8 @@
     "request": "2.34.0",
     "numeral": "1.5.2",
     "cheerio": "0.15.0",
-    "newrelic": "1.5.3"
+    "newrelic": "1.5.3",
+    "mongoose": "3.8.8"
   },
   "subdomain": "mangacloud",
   "engines": {
