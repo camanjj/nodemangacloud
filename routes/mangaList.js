@@ -8,6 +8,7 @@ var zlib = require('zlib');
 var numeral = require('numeral');
 var util = require('util');
 var qs = require('querystring');
+var Promise = require('promise');
 
 
 var loginUrl = 'http://www.batoto.net/forums/index.php?app=core&module=global&section=login&do=process';
@@ -31,9 +32,9 @@ exports.updates = function(req, res){
 };
 
 /**
- * get the manga information for a selected manga
+ * get the manga.js information for a selected manga.js
  * @param req - the request sent to the server
- * @property req.params.page - the page to the manga information page
+ * @property req.params.page - the page to the manga.js information page
  */
 exports.info = function(req, res){
 
@@ -48,9 +49,9 @@ exports.info = function(req, res){
 
 
 /**
- * gets the links for the pages in a manga chapter
+ * gets the links for the pages in a manga.js chapter
  * @param {Request} req - the request
- * @property {String} req.query.page - the link to the first page in the manga chapter
+ * @property {String} req.query.page - the link to the first page in the manga.js chapter
  *
  */
 exports.read = function(req, res){
@@ -108,12 +109,12 @@ exports.login = function(req, res){
 
 
 /**
- *  follows or unfollows a manga
+ *  follows or unfollows a manga.js
  *  @param {Request} req - request hat has the cookies for credentialing
  *  @property {object} req.headers.cookie -  cookies need for credentialing
  *  @property {object} params.action - follow/unfollow
- *  @property {strng} params.rid - the id for the manga
- *  @property {object} params.sKey - the key needed to follow manga
+ *  @property {strng} params.rid - the id for the manga.js
+ *  @property {object} params.sKey - the key needed to follow manga.js
  *  @property {object} params.session - the seesion id for the user
  */
 exports.follow = function(req, res){
@@ -204,7 +205,7 @@ exports.follows = function(req, res){
 };
 
 /**
- *  searches for manga
+ *  searches for manga.js
  */
 exports.search = function(req, res){
 
@@ -303,7 +304,7 @@ function parseUpdates(response, body){
 
             chapter.updateTime = self.find('td').last().text().trim();
 
-            //adds this chapter to the manga preview item
+            //adds this chapter to the manga.js preview item
             mpi.chapters.push(chapter);
 
         }
@@ -326,15 +327,15 @@ function parseInfo(response, body){
 
 
 
-    //if the user if signed in then it shows if the user is currently following the manga or not
+    //if the user if signed in then it shows if the user is currently following the manga.js or not
     var followingSection = $('div.__like.right a').first();
     if(followingSection.length > 0){
         manga.following = followingSection.text().indexOf('Unfollow') !== -1;
-        manga.followers = $('div.__like.right strong').first().text(); // gets the amount of people that are following the manga
+        manga.followers = $('div.__like.right strong').first().text(); // gets the amount of people that are following the manga.js
     }
 
 
-    //collectes the manga information from the table
+    //collectes the manga.js information from the table
     $('.ipb_table').first().find('tr').each(function(i, element){
 
         var tableData = $(this).find('td').last().text();
@@ -434,11 +435,11 @@ function getPages(response, body){
         });
 
         response.send(images);
-    } else {//manga mode
+    } else {//manga.js mode
 
         var imageLink = $('#comic_page').attr('src');
 
-        if(imageLink.indexOf('img0000') != -1){ //new manga
+        if(imageLink.indexOf('img0000') != -1){ //new manga.js
 
             var prefix  = imageLink.substring(0,imageLink.lastIndexOf('img')+3);
             var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
@@ -450,9 +451,9 @@ function getPages(response, body){
             }
 
             response.send(images);
-        } else { //old manga
+        } else { //old manga.js
 
-            console.log('old manga');
+            console.log('old manga.js');
 
             var imageLink = $('#comic_page').attr('src');
             images.push(imageLink);
