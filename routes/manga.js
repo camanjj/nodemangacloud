@@ -191,7 +191,7 @@ exports.info = function(req, res){
     });
 
 
-}
+};
 
 exports.follows = function(req, res){
 
@@ -367,7 +367,7 @@ exports.pages = function(req, res){
 
                     console.log('old manga.js');
 
-                    var imageLink = $('#comic_page').attr('src');
+//                    var imageLink = $('#comic_page').attr('src');
                     images.push(imageLink);
 
                     var mangaAll = $('.moderation_bar ul li a').first();
@@ -378,14 +378,13 @@ exports.pages = function(req, res){
                     var promises = [];
                     $('#page_select').first().find('option').each(function (e, el){
                         var url = $(this).val();
-                        var func = makePageFunction(url, res);
+                        var func = makePageFunction(url, res, e + 1);
                         promises.push(func);
                     });
 
 
-                    res.write( promises.length + '\n', 'utf-8');
-                    console.log('sdfsfsdf');
-
+//                    res.write( promises.length + '\n', 'utf-8');
+                    res.write(promises.length + '-start\n', 'utf-8');
 
                     async.parallelLimit(promises, 10, function(err, results){
 
@@ -403,6 +402,7 @@ exports.pages = function(req, res){
                                 res.end();
                             });
                         } else {
+                            res.status(500);
                             console.log(err);
                             res.end();
                         }
@@ -473,7 +473,7 @@ function requestp(options) {
     });
 }
 
-function makePageFunction(url, response){
+function makePageFunction(url, response, page){
 
     return function(callback){
         var resp = response;
@@ -496,7 +496,7 @@ function makePageFunction(url, response){
                             callback(new Error("failed to get an image"), null);
                         }
 
-                        resp.write(image + '\n');
+                        resp.write(page + '-' + image + '\n');
                         callback(null, image);
                     });
                 } else if (encoding == 'deflate') {
@@ -506,7 +506,7 @@ function makePageFunction(url, response){
                             resp.statusCode(500);
                             callback(new Error("failed to get an image"), null);
                         }
-                        resp.write(image + '\n');
+                        resp.write(page + '-' + image + '\n');
                         callback(null, image);
                     })
                 } else {
@@ -516,7 +516,7 @@ function makePageFunction(url, response){
                         callback(new Error("failed to get an image"), null);
                     }
                     if(image !== undefined){
-                        resp.write(image + '\n');
+                        resp.write(page + '-' + image + '\n');
                     }
                     callback(null, image)
                 }
@@ -528,6 +528,6 @@ function makePageFunction(url, response){
 function handleImage(html){
     var $ = cheerio.load(html);
     var image = $('#comic_page').attr('src');
-    console.log(image);
+//    console.log(image);
     return image;
 }
