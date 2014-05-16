@@ -314,7 +314,6 @@ exports.pages = function(req, res){
             res.send(chapter.pages);
             return Promise.reject('stop');
         } else {
-            res.write('', 'utf-8');
             console.log('Not in databse');
             return setOptions(req, req.query.page, 'GET');
         }
@@ -348,8 +347,9 @@ exports.pages = function(req, res){
                 res.send(images);
             } else {//manga.js mode
 
-                var imageLink = $('#comic_page').attr('src');
+                res.write('', 'utf-8');//just to send a response to the client
 
+                var imageLink = $('#comic_page').attr('src');
 
                 if(imageLink.indexOf('img0000') != -1 && false){ //new manga.js
 
@@ -414,7 +414,6 @@ exports.pages = function(req, res){
             }
         });
 };
-
 
 function setOptions(req, url, method){
 
