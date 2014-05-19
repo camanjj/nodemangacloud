@@ -1,8 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-
-
 var ChapterSchema = new Schema({
 
     link: {type: String, index: true},
@@ -12,7 +10,6 @@ var ChapterSchema = new Schema({
     updatedAt: {type: Date, default: Date.now()}
 
 });
-
 
 var MangaSchema = new Schema({
     mangaId: {type: String, index: true},
@@ -27,7 +24,6 @@ var NewsSchema = new Schema({
     createdAt: {type: Date, default: Date.now()},
     updatedAt: {type: Date, default: Date.now()}
 });
-
 
 exports.chapterModel = mongoose.model('Chapter', ChapterSchema);
 exports.mangaModel = mongoose.model('Manga', MangaSchema);

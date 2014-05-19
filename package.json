@@ -3,7 +3,7 @@
   "version": "0.0.10",
   "private": true,
   "scripts": {
-    "start": "export NODE_ENV=production node app.js"
+    "start": "node app.js"
   },
   "author": "Cameron Jackson",
   "dependencies": {

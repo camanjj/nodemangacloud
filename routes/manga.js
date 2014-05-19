@@ -94,9 +94,8 @@ exports.info = function(req, res){
 
         manga.title = $('.ipsType_pagetitle').first().text().trim();
 
-        var infoTable = $('.ipsBox');
+        var infoTable = $('.ipsBox').first();
         manga.image = infoTable.find('img').first().attr('src');
-
 
 
         //if the user if signed in then it shows if the user is currently following the manga.js or not
@@ -106,6 +105,7 @@ exports.info = function(req, res){
             manga.followers = $('div.__like.right strong').first().text(); // gets the amount of people that are following the manga.js
         }
 
+        manga.mature  = infoTable.children('div').last().text();
 
         //collectes the manga.js information from the table
         $('.ipb_table').first().find('tr').each(function(i, element){
@@ -208,10 +208,9 @@ exports.follows = function(req, res){
 
         var $ = cheerio.load(data);
         var mpis = [];
-        var mpi;
+        var mpi = {};
         $('.ipb_table tr[class!=header]').each(function(i, element){
 
-            mpi = {};
             mpi.chapters = [];
             var chapter = {};
             $(this).find('td').each(function(e, el){
@@ -255,7 +254,7 @@ exports.follows = function(req, res){
         console.error("%s; %s", err.message, url);
         console.log("%j", err.res.statusCode);
     });
-}
+};
 
 exports.search = function(req, res){
 
@@ -294,7 +293,7 @@ exports.search = function(req, res){
 
 
 
-}
+};
 
 exports.pages = function(req, res){
 
@@ -453,6 +452,7 @@ function requestp(options) {
             });
 
             res.on('end', function() {
+                console.log('end buffer');
                 var buffer = Buffer.concat(chunks);
                 var encoding = res.headers['content-encoding'];
                 if (encoding == 'gzip') {
