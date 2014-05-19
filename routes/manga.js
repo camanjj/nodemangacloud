@@ -383,7 +383,6 @@ exports.pages = function(req, res){
                     });
 
 
-//                    res.write( promises.length + '\n', 'utf-8');
                     res.write(promises.length + '-start\n', 'utf-8');
 
                     async.parallelLimit(promises, 10, function(err, results){
@@ -404,7 +403,7 @@ exports.pages = function(req, res){
                         } else {
                             res.status(500);
                             console.log(err);
-                            res.end();
+                            res.end(err);
                         }
 
                     });

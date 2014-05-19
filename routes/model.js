@@ -21,6 +21,14 @@ var MangaSchema = new Schema({
     updatedAt: {type: Date, default: Date.now()}
 });
 
+var NewsSchema = new Schema({
+    title : String,
+    message : String,
+    createdAt: {type: Date, default: Date.now()},
+    updatedAt: {type: Date, default: Date.now()}
+});
+
 
 exports.chapterModel = mongoose.model('Chapter', ChapterSchema);
 exports.mangaModel = mongoose.model('Manga', MangaSchema);
+exports.newsModel = mongoose.model('News', NewsSchema);
