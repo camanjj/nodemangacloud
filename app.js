@@ -76,7 +76,8 @@ app.post('/news', news.createNews);
 
 
 http.createServer(app).listen(app.get('port'), function(){
-    mongoose.connect(DATABASE_URL, function(err, res){
+
+    var db = mongoose.connect(DATABASE_URL, function(err, res){
         if (err) {
             console.log ('ERROR connecting:' + err);
         } else {
@@ -84,4 +85,5 @@ http.createServer(app).listen(app.get('port'), function(){
         }
     });
     console.log('Express server listening on port ' + app.get('port'));
+
 });

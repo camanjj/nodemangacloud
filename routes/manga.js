@@ -207,10 +207,12 @@ exports.follows = function(req, res){
     setOptions(req, pageLink, 'GET').then(requestp).then(function (data){
 
         var $ = cheerio.load(data);
+
         var mpis = [];
-        var mpi = {};
+
         $('.ipb_table tr[class!=header]').each(function(i, element){
 
+            var mpi = {};
             mpi.chapters = [];
             var chapter = {};
             $(this).find('td').each(function(e, el){
