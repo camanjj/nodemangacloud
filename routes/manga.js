@@ -1,19 +1,11 @@
-
-
 var cheerio = require('cheerio');
 var request = require('request');
 var zlib = require('zlib');
 var numeral = require('numeral');
 var util = require('util');
-var qs = require('querystring');
 var Promise = require('promise');
 var async = require('async');
-var mongoose = require('mongoose');
 var models = require('./model')
-
-
-
-
 
 exports.fetchUpdates = function(req, res){
 
@@ -313,7 +305,7 @@ exports.pages = function(req, res){
 
         if(chapter !== null && chapter !== undefined){
             res.send(chapter.pages);
-            return Promise.reject('stop');
+            return Promise.done(); //ends the promise tree
         } else {
             console.log('Not in databse');
             return setOptions(req, req.query.page, 'GET');
@@ -337,6 +329,18 @@ exports.pages = function(req, res){
             var images = [];
 
             if(!numberOfPages){//webtoon mode
+
+
+                var chapter_select = $('select[name=chapter_select]').first();
+
+
+                //this occurs when the manga page does not exist
+                //for example this occurs when the link exist but the manga is put on hold
+                console.log(chapter_select);
+                if(chapter_select.html() === null){
+                    res.send(500, 'Page does not exist');
+                    return;
+                }
 
                 console.log('webtoon');
                 $('img').filter(function (i, el){
@@ -388,12 +392,12 @@ exports.pages = function(req, res){
 
                     async.parallelLimit(promises, 10, function(err, results){
 
-                        if(!err){
+                        if(err === null){
                             //need to check if the manga exist and if the chapter exist
                             var Manga = models.mangaModel;
                             Manga.findOne({'mangaId': mId}).exec(function (err, manga){
                                 if(manga === null){
-                                    manga = new Manga({mangaId: mId, mangaName: mName, chapters: []});
+                                    manga = new Manga({mangaId: mId, mangaName: mName});
                                     manga.save();
                                 }
 
@@ -402,9 +406,8 @@ exports.pages = function(req, res){
                                 res.end();
                             });
                         } else {
-                            res.status(500);
                             console.log(err);
-                            res.end(err);
+                            res.end();
                         }
 
                     });
@@ -416,7 +419,6 @@ exports.pages = function(req, res){
 };
 
 function setOptions(req, url, method){
-
 
     var cookies;
     if(req != null){
@@ -431,7 +433,6 @@ function setOptions(req, url, method){
         headers: {
             'content-type': 'text/html',
             'Accept' :'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-//            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131',
             'accept-encoding' : "gzip,deflate",
             'Connection': 'keep-alive',
             'Cookie' : cookies
@@ -445,16 +446,12 @@ function requestp(options) {
     return new Promise(function (resolve, reject) {
         var req = request(options);
         req.on('response', function(res) {
-            console.log('tt');
-//            console.log(res);
-
             var chunks = [];
             res.on('data', function(chunk) {
                 chunks.push(chunk);
             });
 
             res.on('end', function() {
-                console.log('end buffer');
                 var buffer = Buffer.concat(chunks);
                 var encoding = res.headers['content-encoding'];
                 if (encoding == 'gzip') {
@@ -492,8 +489,9 @@ function makePageFunction(url, response, page){
                     zlib.gunzip(buffer, function(err, decoded) {
                         var image = handleImage(decoded.toString());
                         if(image === null){
-                            resp.statusCode(500);
+                            resp.write(-1 + '-failed');
                             callback(new Error("failed to get an image"), null);
+                            return;
                         }
 
                         resp.write(page + '-' + image + '\n');
@@ -503,8 +501,9 @@ function makePageFunction(url, response, page){
                     zlib.inflate(buffer, function(err, decoded) {
                         var image = handleImage(decoded.toString());
                         if(image === null){
-                            resp.statusCode(500);
+                            resp.write(-1 + '-failed');
                             callback(new Error("failed to get an image"), null);
+                            return;
                         }
                         resp.write(page + '-' + image + '\n');
                         callback(null, image);
@@ -512,8 +511,9 @@ function makePageFunction(url, response, page){
                 } else {
                    var image = handleImage(buffer.toString());
                     if(image === null){
-                        resp.statusCode(500);
+                        resp.write(-1 + '-failed');
                         callback(new Error("failed to get an image"), null);
+                        return;
                     }
                     if(image !== undefined){
                         resp.write(page + '-' + image + '\n');
@@ -528,6 +528,5 @@ function makePageFunction(url, response, page){
 function handleImage(html){
     var $ = cheerio.load(html);
     var image = $('#comic_page').attr('src');
-//    console.log(image);
     return image;
 }

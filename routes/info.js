@@ -1,7 +1,4 @@
 
-
-
-
 exports.version = function(request, response){
 
     if(request.query.version === "iOS"){
