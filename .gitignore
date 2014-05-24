@@ -2,3 +2,5 @@ node_modules/
 out/*
 .idea/*
 newrelic_agent.log
+NodeMangaCloud.sublime-project
+NodeMangaCloud.sublime-workspace

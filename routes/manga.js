@@ -7,29 +7,29 @@ var Promise = require('promise');
 var async = require('async');
 var models = require('./model')
 
-exports.fetchUpdates = function(req, res){
+exports.fetchUpdates = function(req, res) {
 
     var pageLink = "";
-    if(!req.query.page || req.query.page === 1)
+    if (!req.query.page || req.query.page === 1)
         pageLink = 'http://www.batoto.net';
-    else{
+    else {
         //allows paging to the request
         pageLink = util.format('http://www.batoto.net?p=%d', req.query.page);
     }
 
-    setOptions(req, pageLink, 'GET').then(requestp).then(function (data){
+    setOptions(req, pageLink, 'GET').then(requestp).then(function(data) {
 
 
         var $ = cheerio.load(data.toString());
 
         var mpis = [];
         var mpi;
-        $('.ipb_table tr[class!=header]').each(function(i, element){
+        $('.ipb_table tr[class!=header]').each(function(i, element) {
 
             var self = $(this);
-            if($(this).find('td').length == 2){
+            if ($(this).find('td').length == 2) {
                 //used to ignore the first blank row
-                if(mpi != null)
+                if (mpi != null)
                     mpis.push(mpi);
                 mpi = {};
                 mpi.chapters = [];
@@ -64,22 +64,24 @@ exports.fetchUpdates = function(req, res){
 
         res.send(mpis);
 
-    }, function (err) {
-        res.send(500, {'error': "error connecting to batoto"});
+    }, function(err) {
+        res.send(500, {
+            'error': "error connecting to batoto"
+        });
         console.error("%s; %s", err.message, url);
         console.log("%j", err.res.statusCode);
     });
 
-}
+};
 
-exports.info = function(req, res){
+exports.info = function(req, res) {
 
-    if(!req.query.page){
+    if (!req.query.page) {
         res.send(400, 'Missing paramater page');
         return;
     }
 
-    setOptions(req, req.query.page, 'GET').then(requestp).then(function (data){
+    setOptions(req, req.query.page, 'GET').then(requestp).then(function(data) {
 
         var $ = cheerio.load(data.toString());
         var manga = {};
@@ -92,18 +94,18 @@ exports.info = function(req, res){
 
         //if the user if signed in then it shows if the user is currently following the manga.js or not
         var followingSection = $('div.__like.right a').first();
-        if(followingSection.length > 0){
+        if (followingSection.length > 0) {
             manga.following = followingSection.text().indexOf('Unfollow') !== -1;
             manga.followers = $('div.__like.right strong').first().text(); // gets the amount of people that are following the manga.js
         }
 
-        manga.mature  = infoTable.children('div').last().text();
+        manga.mature = infoTable.children('div').last().text();
 
         //collectes the manga.js information from the table
-        $('.ipb_table').first().find('tr').each(function(i, element){
+        $('.ipb_table').first().find('tr').each(function(i, element) {
 
             var tableData = $(this).find('td').last().text();
-            switch (i){
+            switch (i) {
 
                 case 0:
                     manga.altNames = tableData;
@@ -133,16 +135,16 @@ exports.info = function(req, res){
         var chapters = [];
 
         //collects the chapters
-        $('.chapters_list tr[class!=header]').each(function(i, element){
+        $('.chapters_list tr[class!=header]').each(function(i, element) {
 
             var chapter = new Object();
 
-            $(this).find('td').each(function(i, element){
+            $(this).find('td').each(function(i, element) {
 
-                switch(i){
+                switch (i) {
 
                     case 0:
-                        var title =  $(this).find('a').first();
+                        var title = $(this).find('a').first();
                         chapter.title = title.text();
                         chapter.link = title.attr('href');
                         break;
@@ -166,7 +168,7 @@ exports.info = function(req, res){
 
             });
 
-            if($(this).attr('id') !== 'no_chap_avl')
+            if ($(this).attr('id') !== 'no_chap_avl')
                 chapters.push(chapter);
 
         });
@@ -176,8 +178,10 @@ exports.info = function(req, res){
         res.send(manga);
 
 
-    }, function (error){
-        res.send(500, {'error': "error connecting to batoto"});
+    }, function(error) {
+        res.send(500, {
+            'error': "error connecting to batoto"
+        });
         console.error("%s; %s", err.message, url);
         console.log("%j", err.res.statusCode);
     });
@@ -185,29 +189,29 @@ exports.info = function(req, res){
 
 };
 
-exports.follows = function(req, res){
+exports.follows = function(req, res) {
 
 
     var pageLink = '';
 
-    if(!req.query.page || req.query.page === 1)
+    if (!req.query.page || req.query.page === 1)
         pageLink = 'http://www.batoto.net/myfollows';
     else {
         pageLink = util.format('http://www.batoto.net/myfollows?p=%d', req.query.page);
     }
 
-    setOptions(req, pageLink, 'GET').then(requestp).then(function (data){
+    setOptions(req, pageLink, 'GET').then(requestp).then(function(data) {
 
         var $ = cheerio.load(data);
 
         var mpis = [];
 
-        $('.ipb_table tr[class!=header]').each(function(i, element){
+        $('.ipb_table tr[class!=header]').each(function(i, element) {
 
             var mpi = {};
             mpi.chapters = [];
             var chapter = {};
-            $(this).find('td').each(function(e, el){
+            $(this).find('td').each(function(e, el) {
 
                 switch (e) {
                     case 1:
@@ -243,26 +247,28 @@ exports.follows = function(req, res){
         });
         res.send(mpis);
 
-    }, function (error){
-        res.send(500, {'error': "error connecting to batoto"});
+    }, function(error) {
+        res.send(500, {
+            'error': "error connecting to batoto"
+        });
         console.error("%s; %s", err.message, url);
         console.log("%j", err.res.statusCode);
     });
 };
 
-exports.search = function(req, res){
+exports.search = function(req, res) {
 
     var term = req.query.term;
     var url = util.format('http://www.batoto.net/search?name=%s&name_cond=c&dosubmit=Search', term);
 
-    setOptions(req, url, 'GET').then(requestp).then(function (data){
+    setOptions(req, url, 'GET').then(requestp).then(function(data) {
 
         var $ = cheerio.load(data);
 
         var results = [];
-        $('.chapters_list tr[class!=header]').each(function(i, element){
+        $('.chapters_list tr[class!=header]').each(function(i, element) {
 
-            if($(this).find('td').length !== 1){
+            if ($(this).find('td').length !== 1) {
 
                 var result = {};
 
@@ -271,7 +277,7 @@ exports.search = function(req, res){
                 result.title = title.text();
                 result.link = title.attr('href');
 
-                if(result.title !== "")
+                if (result.title !== "")
                     results.push(result);
             }
 
@@ -279,31 +285,33 @@ exports.search = function(req, res){
 
         res.send(results);
 
-    }, function(error){
-        res.send(500, {'error': "error connecting to batoto"});
+    }, function(error) {
+        res.send(500, {
+            'error': "error connecting to batoto"
+        });
         console.error("%s; %s", err.message, url);
         console.log("%j", err.res.statusCode);
     });
 
-
-
 };
 
-exports.pages = function(req, res){
+exports.pages = function(req, res) {
 
-    if(!req.query.page){
+    if (!req.query.page) {
         res.status(400);
         res.send('Missing paramater page');
         return;
     }
 
     var Chapter = models.chapterModel;
-    var query = Chapter.findOne({'link': req.query.page});
+    var query = Chapter.findOne({
+        'link': req.query.page
+    });
 
     query.select('pages link');
-    query.exec().then(function(chapter){
+    query.exec().then(function(chapter) {
 
-        if(chapter !== null && chapter !== undefined){
+        if (chapter !== null && chapter !== undefined) {
             res.send(chapter.pages);
             return Promise.done(); //ends the promise tree
         } else {
@@ -311,119 +319,128 @@ exports.pages = function(req, res){
             return setOptions(req, req.query.page, 'GET');
         }
 
-    }, function(error){
+    }, function(error) {
 
         console.log(error);
-        if(error !== 'stop')
+        if (error !== 'stop')
             return setOptions(req, req.query.page, 'GET');
 
-    }).then(requestp).then(function(data){
+    }).then(requestp).then(function(data) {
 
-            console.log('got data');
-            var $ = cheerio.load(data);
+        console.log('got data');
+        var $ = cheerio.load(data);
 
-            var numberOfPages = $('#page_select').first().find('option').length;
+        var numberOfPages = $('#page_select').first().find('option').length;
 
-            var title = $('head title').text();
+        var title = $('head title').text();
 
-            var images = [];
+        var images = [];
 
-            if(!numberOfPages){//webtoon mode
-
-
-                var chapter_select = $('select[name=chapter_select]').first();
+        if (!numberOfPages) { //webtoon mode
 
 
-                //this occurs when the manga page does not exist
-                //for example this occurs when the link exist but the manga is put on hold
-                console.log(chapter_select);
-                if(chapter_select.html() === null){
-                    res.send(500, 'Page does not exist');
-                    return;
+            var chapter_select = $('select[name=chapter_select]').first();
+
+
+            //this occurs when the manga page does not exist
+            //for example this occurs when the link exist but the manga is put on hold
+            console.log(chapter_select);
+            if (chapter_select.html() === null) {
+                res.send(500, 'Page does not exist');
+                return;
+            }
+
+            console.log('webtoon');
+            $('img').filter(function(i, el) {
+                return $(this).attr('alt') === title;
+            }).each(function(i, el) {
+                images.push($(this).attr('src'));
+            });
+
+            res.send(images);
+        } else { //manga.js mode
+
+            res.write('', 'utf-8'); //just to send a response to the client
+
+            var imageLink = $('#comic_page').attr('src');
+
+            if (imageLink.indexOf('img0000') != -1 && false) { //new manga.js
+
+                var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
+                var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
+                for (var i = 1; i <= numberOfPages; i++) {
+                    var page = numeral(i * .000001).format('.000000')
+                    page = page.substring(1);
+
+                    images.push(prefix + page + suffix);
                 }
-
-                console.log('webtoon');
-                $('img').filter(function (i, el){
-                    return $(this).attr('alt') === title;
-                }).each(function(i, el){
-                    images.push($(this).attr('src'));
-                });
 
                 res.send(images);
-            } else {//manga.js mode
+            } else { //old manga.js
 
-                res.write('', 'utf-8');//just to send a response to the client
+                console.log('old manga.js');
 
-                var imageLink = $('#comic_page').attr('src');
+                //                    var imageLink = $('#comic_page').attr('src');
+                images.push(imageLink);
 
-                if(imageLink.indexOf('img0000') != -1 && false){ //new manga.js
+                var mangaAll = $('.moderation_bar ul li a').first();
+                var link = mangaAll.attr('href');
+                var mId = link.substr(link.lastIndexOf('r'));
+                var mName = mangaAll.text();
 
-                    var prefix  = imageLink.substring(0,imageLink.lastIndexOf('img')+3);
-                    var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
-                    for(var i =1; i <= numberOfPages; i++){
-                        var page = numeral(i * .000001).format('.000000')
-                        page = page.substring(1);
+                var promises = [];
+                $('#page_select').first().find('option').each(function(e, el) {
+                    var url = $(this).val();
+                    var func = makePageFunction(url, res, e + 1);
+                    promises.push(func);
+                });
 
-                        images.push(prefix + page + suffix);
+
+                res.write(promises.length + '-start\n', 'utf-8');
+
+                async.parallelLimit(promises, 10, function(err, results) {
+
+                    if (!err) {
+                        //need to check if the manga exist and if the chapter exist
+                        var Manga = models.mangaModel;
+                        Manga.findOne({
+                            'mangaId': mId
+                        }).exec(function(err, manga) {
+                            if (manga === null) {
+                                manga = new Manga({
+                                    mangaId: mId,
+                                    mangaName: mName
+                                });
+                                manga.save();
+                            }
+
+                            var chpr = new Chapter({
+                                link: req.query.page,
+                                pages: results,
+                                manga: manga._id
+                            })
+                            chpr.save();
+                            res.end();
+                        });
+                    } else {
+                        console.log(err);
+                        res.end();
                     }
 
-                    res.send(images);
-                } else { //old manga.js
-
-                    console.log('old manga.js');
-
-//                    var imageLink = $('#comic_page').attr('src');
-                    images.push(imageLink);
-
-                    var mangaAll = $('.moderation_bar ul li a').first();
-                    var link = mangaAll.attr('href');
-                    var mId = link.substr(link.lastIndexOf('r'));
-                    var mName = mangaAll.text();
-
-                    var promises = [];
-                    $('#page_select').first().find('option').each(function (e, el){
-                        var url = $(this).val();
-                        var func = makePageFunction(url, res, e + 1);
-                        promises.push(func);
-                    });
-
-
-                    res.write(promises.length + '-start\n', 'utf-8');
-
-                    async.parallelLimit(promises, 10, function(err, results){
-
-                        if(err === null){
-                            //need to check if the manga exist and if the chapter exist
-                            var Manga = models.mangaModel;
-                            Manga.findOne({'mangaId': mId}).exec(function (err, manga){
-                                if(manga === null){
-                                    manga = new Manga({mangaId: mId, mangaName: mName});
-                                    manga.save();
-                                }
-
-                                var chpr = new Chapter({link: req.query.page, pages: results, manga: manga._id})
-                                chpr.save();
-                                res.end();
-                            });
-                        } else {
-                            console.log(err);
-                            res.end();
-                        }
-
-                    });
-
-                }
+                });
 
             }
-        });
+
+        }
+    });
 };
 
-function setOptions(req, url, method){
+function setOptions(req, url, method) {
 
     var cookies;
-    if(req != null){
+    if (req != null) {
 
-        cookies =  req.headers.cookie;
+        cookies = req.headers.cookie;
     } else {
         cookies = stringCookies;
     }
@@ -432,10 +449,10 @@ function setOptions(req, url, method){
         method: method,
         headers: {
             'content-type': 'text/html',
-            'Accept' :'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'accept-encoding' : "gzip,deflate",
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'accept-encoding': "gzip,deflate",
             'Connection': 'keep-alive',
-            'Cookie' : cookies
+            'Cookie': cookies
         }
     };
 
@@ -443,7 +460,7 @@ function setOptions(req, url, method){
 }
 
 function requestp(options) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
         var req = request(options);
         req.on('response', function(res) {
             var chunks = [];
@@ -470,11 +487,13 @@ function requestp(options) {
     });
 }
 
-function makePageFunction(url, response, page){
+function makePageFunction(url, response, page) {
 
-    return function(callback){
+    return function(callback) {
         var resp = response;
-        var req = request({url: url});
+        var req = request({
+            url: url
+        });
         req.on('response', function(res) {
 
             var chunks = [];
@@ -488,7 +507,7 @@ function makePageFunction(url, response, page){
                 if (encoding == 'gzip') {
                     zlib.gunzip(buffer, function(err, decoded) {
                         var image = handleImage(decoded.toString());
-                        if(image === null){
+                        if (image === null) {
                             resp.write(-1 + '-failed');
                             callback(new Error("failed to get an image"), null);
                             return;
@@ -500,7 +519,7 @@ function makePageFunction(url, response, page){
                 } else if (encoding == 'deflate') {
                     zlib.inflate(buffer, function(err, decoded) {
                         var image = handleImage(decoded.toString());
-                        if(image === null){
+                        if (image === null) {
                             resp.write(-1 + '-failed');
                             callback(new Error("failed to get an image"), null);
                             return;
@@ -509,13 +528,13 @@ function makePageFunction(url, response, page){
                         callback(null, image);
                     })
                 } else {
-                   var image = handleImage(buffer.toString());
-                    if(image === null){
+                    var image = handleImage(buffer.toString());
+                    if (image === null) {
                         resp.write(-1 + '-failed');
                         callback(new Error("failed to get an image"), null);
                         return;
                     }
-                    if(image !== undefined){
+                    if (image !== undefined) {
                         resp.write(page + '-' + image + '\n');
                     }
                     callback(null, image)
@@ -525,7 +544,7 @@ function makePageFunction(url, response, page){
     }
 }
 
-function handleImage(html){
+function handleImage(html) {
     var $ = cheerio.load(html);
     var image = $('#comic_page').attr('src');
     return image;
