@@ -327,6 +327,7 @@ exports.pages = function(req, res) {
 
     }).then(requestp).then(function(data) {
 
+
         console.log('got data');
         var $ = cheerio.load(data);
 
@@ -344,7 +345,6 @@ exports.pages = function(req, res) {
 
             //this occurs when the manga page does not exist
             //for example this occurs when the link exist but the manga is put on hold
-            console.log(chapter_select);
             if (chapter_select.html() === null) {
                 res.send(500, 'Page does not exist');
                 return;
@@ -360,6 +360,7 @@ exports.pages = function(req, res) {
             res.send(images);
         } else { //manga.js mode
 
+            res.set('Etag', 'stream');
             res.write('', 'utf-8'); //just to send a response to the client
 
             var imageLink = $('#comic_page').attr('src');
@@ -395,8 +396,9 @@ exports.pages = function(req, res) {
                     promises.push(func);
                 });
 
-
                 res.write(promises.length + '-start\n', 'utf-8');
+
+                console.log('set the header');
 
                 async.parallelLimit(promises, 10, function(err, results) {
 

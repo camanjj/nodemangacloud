@@ -17,12 +17,12 @@ var loginUrl = 'http://www.batoto.net/forums/index.php?app=core&module=global&se
  *  gets the updates list
  *  @property req.headers.cookie - set lang_option to something to get things in certain language
  */
-exports.updates = function(req, res){
+exports.updates = function(req, res) {
 
 
-    if(!req.query.page || req.query.page === 1)
+    if (!req.query.page || req.query.page === 1)
         fetchPage('http://www.batoto.net', req, res, parseUpdates);
-    else{
+    else {
         //allows paging to the request
         var pageLink = util.format('http://www.batoto.net?p=%d', req.query.page);
         fetchPage(pageLink, req, res, parseUpdates);
@@ -36,9 +36,9 @@ exports.updates = function(req, res){
  * @param req - the request sent to the server
  * @property req.params.page - the page to the manga.js information page
  */
-exports.info = function(req, res){
+exports.info = function(req, res) {
 
-    if(!req.query.page){
+    if (!req.query.page) {
         res.status(400);
         res.send('Missing paramater page');
     } else {
@@ -54,9 +54,9 @@ exports.info = function(req, res){
  * @property {String} req.query.page - the link to the first page in the manga.js chapter
  *
  */
-exports.read = function(req, res){
+exports.read = function(req, res) {
 
-    if(!req.query.page){
+    if (!req.query.page) {
         res.status(400);
         res.send('Missing paramater page');
     } else {
@@ -72,13 +72,13 @@ exports.read = function(req, res){
  * @returns {String} JSON object giving all the credentials needed to continue being the specified user
  *
  * */
-exports.login = function(req, res){
+exports.login = function(req, res) {
 
     var b = req.body.uname;
     var body = '';
 
-    if(!b){
-        req.on('data', function (data) {
+    if (!b) {
+        req.on('data', function(data) {
             body += data;
             // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
             if (body.length > 1e6) {
@@ -86,7 +86,7 @@ exports.login = function(req, res){
                 request.connection.destroy();
             }
         });
-        req.on('end', function () {
+        req.on('end', function() {
             var POST = qs.parse(body);
             var formData = new Object();
             formData.auth_key = '880ea6a14ea49e853634fbdc5015a024';
@@ -117,13 +117,13 @@ exports.login = function(req, res){
  *  @property {object} params.sKey - the key needed to follow manga.js
  *  @property {object} params.session - the seesion id for the user
  */
-exports.follow = function(req, res){
+exports.follow = function(req, res) {
 
     var key = req.body.sKey;
     var body = '';
 
-    if(!key){
-        req.on('data', function (data) {
+    if (!key) {
+        req.on('data', function(data) {
             body += data;
             // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
             if (body.length > 1e6) {
@@ -131,29 +131,29 @@ exports.follow = function(req, res){
                 request.connection.destroy();
             }
         });
-        req.on('end', function () {
+        req.on('end', function() {
             var params = qs.parse(body);
 
             var action = params.action === ('follow') ? 'save' : 'unset';
 
             //to follow set do equal to save, to unfollow set do equal to unset
             var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', params.session, action, params.sKey, params.rid);
-            fetchPage(url, req, res, function(response, body){
+            fetchPage(url, req, res, function(response, body) {
 
 
                 //stores the html in a cheerio object
                 var $ = cheerio.load(body);
                 var text = $('a').first().text();
 
-                if(action === 'save'){
+                if (action === 'save') {
                     //returns bool representing if the follow was a success
                     response.send(text === 'Unfollow');
-                }else{
+                } else {
                     //returns bool representing if the unfollow was a success
                     response.send(text === 'Follow');
                 }
 
-            },'POST');
+            }, 'POST');
 
         });
     } else {
@@ -164,7 +164,7 @@ exports.follow = function(req, res){
 
         //to follow set do equal to save, to unfollow set do equal to unset
         var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', session, action, key, rid);
-        fetchPage(url, req, res, function(response, body){
+        fetchPage(url, req, res, function(response, body) {
 
 
             //stores the html in a cheerio object
@@ -174,17 +174,17 @@ exports.follow = function(req, res){
             var result = {};
 
 
-            if(action === 'save'){
+            if (action === 'save') {
                 //returns bool representing if the follow was a success
                 result.success = text === 'Unfollow';
                 response.send(result);
-            }else{
+            } else {
                 //returns bool representing if the unfollow was a success
                 result.success = text === 'Follow';
                 response.send(result);
             }
 
-        },'POST');
+        }, 'POST');
     }
 
 
@@ -194,9 +194,9 @@ exports.follow = function(req, res){
 /**
  * retrieves the follow list for the user
  */
-exports.follows = function(req, res){
+exports.follows = function(req, res) {
 
-    if(!req.query.page || req.query.page === 1)
+    if (!req.query.page || req.query.page === 1)
         fetchPage('http://www.batoto.net/myfollows', req, res, parseFollows, 'GET');
     else {
         var pageLink = util.format('http://www.batoto.net/myfollows?p=%d', req.query.page);
@@ -207,7 +207,7 @@ exports.follows = function(req, res){
 /**
  *  searches for manga.js
  */
-exports.search = function(req, res){
+exports.search = function(req, res) {
 
     var term = req.body.term;
     var url = util.format('http://www.batoto.net/search?name=%s&name_cond=c&dosubmit=Search', term)
@@ -216,14 +216,14 @@ exports.search = function(req, res){
 };
 
 
-function fetchPage(url, req, jsonResponse, callback, method, postBody, stringCookies){
+function fetchPage(url, req, jsonResponse, callback, method, postBody, stringCookies) {
 
 
     var cookies;
 
-    if(req != null){
+    if (req != null) {
 
-        cookies =  req.headers.cookie;
+        cookies = req.headers.cookie;
     } else {
         cookies = stringCookies;
     }
@@ -234,17 +234,17 @@ function fetchPage(url, req, jsonResponse, callback, method, postBody, stringCoo
         method: method,
         headers: {
             'content-type': 'text/html; charset=utf-8',
-            'Accept' :'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Encoding':'gzip',
-            Cookie : cookies
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Encoding': 'gzip',
+            Cookie: cookies
         },
-        encoding : null
+        encoding: null
     };
 
-    if(postBody != null)
+    if (postBody != null)
         options.form = postBody;
 
-    request(options, function(error, response, body){
+    request(options, function(error, response, body) {
 
         if (!error) {
 
@@ -252,36 +252,38 @@ function fetchPage(url, req, jsonResponse, callback, method, postBody, stringCoo
                 if (!err && (response.statusCode == 200 || response.statusCode == 302)) {
                     var html = buffer.toString();
                     callback(jsonResponse, html, response.headers['set-cookie']);
-                }else{
+                } else {
                     jsonResponse.statusCode = 400;
-                    jsonResponse.send({'Failed' : 'For some reason'});
+                    jsonResponse.send({
+                        'Failed': 'For some reason'
+                    });
                 }
             });
         }
     });
 }
 
-function parseUpdates(response, body){
+function parseUpdates(response, body) {
     var $ = cheerio.load(body);
 
     var mpis = [];
     var mpi;
-    $('.ipb_table tr[class!=header]').each(function(i, element){
+    $('.ipb_table tr[class!=header]').each(function(i, element) {
 
         var self = $(this);
 
-        if($(this).find('td').length == 2){
+        if ($(this).find('td').length == 2) {
 
             //used to ignore the first blank row
-            if(mpi != null)
+            if (mpi != null)
                 mpis.push(mpi);
             mpi = {};
             mpi.chapters = [];
             //gets the image element
             var image = $(this).find('img').first();
             var imageString = image.attr('src');
-//            imageString = imageString.substring(imageString.lastIndexOf('http://'));
-//            imageString = util.format('http://www.batoto.net/timthumb.php?h=%d&w=%d&src=%s', 50, 50, imageString);
+            //            imageString = imageString.substring(imageString.lastIndexOf('http://'));
+            //            imageString = util.format('http://www.batoto.net/timthumb.php?h=%d&w=%d&src=%s', 50, 50, imageString);
             mpi.imageLink = imageString;
             mpi.link = image.parent().attr('href');
             mpi.title = $(this).find('td a').last().text();
@@ -314,7 +316,7 @@ function parseUpdates(response, body){
     response.send(mpis);
 }
 
-function parseInfo(response, body){
+function parseInfo(response, body) {
 
 
     var $ = cheerio.load(body);
@@ -329,17 +331,17 @@ function parseInfo(response, body){
 
     //if the user if signed in then it shows if the user is currently following the manga.js or not
     var followingSection = $('div.__like.right a').first();
-    if(followingSection.length > 0){
+    if (followingSection.length > 0) {
         manga.following = followingSection.text().indexOf('Unfollow') !== -1;
         manga.followers = $('div.__like.right strong').first().text(); // gets the amount of people that are following the manga.js
     }
 
 
     //collectes the manga.js information from the table
-    $('.ipb_table').first().find('tr').each(function(i, element){
+    $('.ipb_table').first().find('tr').each(function(i, element) {
 
         var tableData = $(this).find('td').last().text();
-        switch (i){
+        switch (i) {
 
             case 0:
                 manga.altNames = tableData;
@@ -369,16 +371,16 @@ function parseInfo(response, body){
     var chapters = [];
 
     //collects the chapters
-    $('.chapters_list tr[class!=header]').each(function(i, element){
+    $('.chapters_list tr[class!=header]').each(function(i, element) {
 
         var chapter = new Object();
 
-        $(this).find('td').each(function(i, element){
+        $(this).find('td').each(function(i, element) {
 
-            switch(i){
+            switch (i) {
 
                 case 0:
-                    var title =  $(this).find('a').first();
+                    var title = $(this).find('a').first();
                     chapter.title = title.text();
                     chapter.link = title.attr('href');
                     break;
@@ -402,7 +404,7 @@ function parseInfo(response, body){
 
         });
 
-        if($(this).attr('id') !== 'no_chap_avl')
+        if ($(this).attr('id') !== 'no_chap_avl')
             chapters.push(chapter);
 
     });
@@ -415,7 +417,7 @@ function parseInfo(response, body){
 
 }
 
-function getPages(response, body){
+function getPages(response, body) {
 
     var $ = cheerio.load(body);
 
@@ -426,24 +428,24 @@ function getPages(response, body){
 
     var images = [];
 
-    if(!numberOfPages){//webtoon mode
+    if (!numberOfPages) { //webtoon mode
 
-        $('img').filter(function (i, el){
+        $('img').filter(function(i, el) {
             return $(this).attr('alt') === title;
-        }).each(function(i, el){
-                images.push($(this).attr('src'));
+        }).each(function(i, el) {
+            images.push($(this).attr('src'));
         });
 
         response.send(images);
-    } else {//manga.js mode
+    } else { //manga.js mode
 
         var imageLink = $('#comic_page').attr('src');
 
-        if(imageLink.indexOf('img0000') != -1){ //new manga.js
+        if (imageLink.indexOf('img0000') != -1) { //new manga.js
 
-            var prefix  = imageLink.substring(0,imageLink.lastIndexOf('img')+3);
+            var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
             var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
-            for(var i =1; i <= numberOfPages; i++){
+            for (var i = 1; i <= numberOfPages; i++) {
                 var page = numeral(i * .000001).format('.000000')
                 page = page.substring(1);
 
@@ -458,14 +460,14 @@ function getPages(response, body){
             var imageLink = $('#comic_page').attr('src');
             images.push(imageLink);
 
-            $('#page_select').first().find('option').each(function (e, el){
+            $('#page_select').first().find('option').each(function(e, el) {
                 console.log(e);
                 var url = $(this).val();
 
-                fetchPage(url, null, response, function(innerResponse, innerBody){
+                fetchPage(url, null, response, function(innerResponse, innerBody) {
                     var inner = cheerio.load(innerBody);
                     images.push(inner('#comic_page').attr('src'));
-                    if(e === $('#page_select').first().find('option').length-1)
+                    if (e === $('#page_select').first().find('option').length - 1)
                         response.send(images);
                 });
 
@@ -477,11 +479,11 @@ function getPages(response, body){
 
 }
 
-function parseLogin(response, body, cookies){
+function parseLogin(response, body, cookies) {
 
     var str = cookies.toString();
-    if(str.indexOf('pass_hash') === -1){
-       response.statusCode = 400;
+    if (str.indexOf('pass_hash') === -1) {
+        response.statusCode = 400;
         response.send('Error Logging in. Check Credentials');
         return;
     }
@@ -489,7 +491,7 @@ function parseLogin(response, body, cookies){
 
     var jar = new Object();
     var ckString = [];
-    for(x  in cookies){
+    for (x in cookies) {
 
         var ck = (cookies[x].substring(0, cookies[x].indexOf(';')));
         ckString.push(ck);
@@ -497,11 +499,11 @@ function parseLogin(response, body, cookies){
         jar[split_arr[0]] = split_arr[1];
     }
 
-    fetchPage('http://www.batoto.net/',null,response, function(jsonResponse, html){
+    fetchPage('http://www.batoto.net/', null, response, function(jsonResponse, html) {
         var $ = cheerio.load(html);
         var logoutLink = $('#logout_link').first();
         var link = logoutLink.attr('href');
-        var queryString = link.substring(link.indexOf('?')+1);
+        var queryString = link.substring(link.indexOf('?') + 1);
         var object = qs.parse(queryString);
         //object['k'] is the secret key needed
         jar['key'] = object['k'];
@@ -510,17 +512,17 @@ function parseLogin(response, body, cookies){
     }, 'GET', null, ckString.join('; '));
 }
 
-function parseFollows(response, body){
+function parseFollows(response, body) {
 
     var $ = cheerio.load(body);
     var mpis = [];
     var mpi;
-    $('.ipb_table tr[class!=header]').each(function(i, element){
+    $('.ipb_table tr[class!=header]').each(function(i, element) {
 
         mpi = {};
         mpi.chapters = [];
         var chapter = {};
-        $(this).find('td').each(function(e, el){
+        $(this).find('td').each(function(e, el) {
 
             switch (e) {
                 case 1:
@@ -557,14 +559,14 @@ function parseFollows(response, body){
     response.send(mpis);
 }
 
-function parseSearch(response, body){
+function parseSearch(response, body) {
 
     var $ = cheerio.load(body);
 
     var results = [];
-    $('.chapters_list tr[class!=header]').each(function(i, element){
+    $('.chapters_list tr[class!=header]').each(function(i, element) {
 
-        if($(this).find('td').length !== 1){
+        if ($(this).find('td').length !== 1) {
 
             var result = {};
 
@@ -573,7 +575,7 @@ function parseSearch(response, body){
             result.title = title.text();
             result.link = title.attr('href');
 
-            if(result.title !== "")
+            if (result.title !== "")
                 results.push(result);
         }
 
