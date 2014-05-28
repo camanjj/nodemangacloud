@@ -1,6 +1,4 @@
 var mongoose = require('mongoose');
-var moment = require('moment');
-moment().format();
 var Schema = mongoose.Schema;
 
 var ChapterSchema = new Schema({

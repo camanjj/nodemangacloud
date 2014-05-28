@@ -3,7 +3,6 @@
  */
 var models = require('./model');
 var Promise = require('promise');
-var moment = require('moment');
 
 
 exports.createNews = function(request, response) {
@@ -87,8 +86,6 @@ exports.newsSince = function(request, response) {
 
     //gets the date from the request
     var date = new Date(request.body.date);
-
-    console.log(date);
 
     //query to find any 'URGENT' news that was made after the date passed
     News
