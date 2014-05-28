@@ -1,4 +1,4 @@
-require('newrelic');//sends data to new relic
+require('newrelic'); //sends data to new relic
 /**
  * Module dependencies.
  */
@@ -16,7 +16,7 @@ var news = require('./routes/news');
 var http = require('http');
 var path = require('path');
 var bodyParser = require('body-parser');
-var morgan  = require('morgan')
+var morgan = require('morgan')
 var serveStatic = require('serve-static');
 var mongoose = require('mongoose');
 
@@ -73,21 +73,23 @@ app.get('/pages', test.pages);
 //for news
 app.get('/news', news.fetchNews);
 app.post('/news', news.createNews);
+app.post('/news/edit', news.editNews);
+app.post('/news/urgent', news.newsSince);
 
 
-http.createServer(app).listen(app.get('port'), function(){
+http.createServer(app).listen(app.get('port'), function() {
 
 
-    mongoose.connect(DATABASE_URL, function(err, res){
+    mongoose.connect(DATABASE_URL, function(err, res) {
         if (err) {
-            console.log ('ERROR connecting:' + err);
+            console.log('ERROR connecting:' + err);
         } else {
-            console.log ('Succeeded connected');
+            console.log('Succeeded connected');
         }
     });
     var db = mongoose.connection;
-    db.on('error', function(error){
-       console.log(error);
+    db.on('error', function(error) {
+        console.log(error);
     });
 
 

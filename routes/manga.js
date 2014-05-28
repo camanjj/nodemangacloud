@@ -5,7 +5,7 @@ var numeral = require('numeral');
 var util = require('util');
 var Promise = require('promise');
 var async = require('async');
-var models = require('./model')
+var models = require('./model');
 
 exports.fetchUpdates = function(req, res) {
 
@@ -346,7 +346,7 @@ exports.pages = function(req, res) {
             //this occurs when the manga page does not exist
             //for example this occurs when the link exist but the manga is put on hold
             if (chapter_select.html() === null) {
-                res.send(500, 'Page does not exist');
+                res.send(500, 'This sometimes occurs when a recetly added manga does not have any pages in the reader. I would try again later');
                 return;
             }
 
@@ -370,7 +370,7 @@ exports.pages = function(req, res) {
                 var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
                 var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
                 for (var i = 1; i <= numberOfPages; i++) {
-                    var page = numeral(i * .000001).format('.000000')
+                    var page = numeral(i * .000001).format('.000000');
                     page = page.substring(1);
 
                     images.push(prefix + page + suffix);
@@ -396,9 +396,14 @@ exports.pages = function(req, res) {
                     promises.push(func);
                 });
 
-                res.write(promises.length + '-start\n', 'utf-8');
 
-                console.log('set the header');
+                var p = {
+                    page: promises.length,
+                    link: 'start'
+                };
+
+                res.write(JSON.stringify(p) + '\n');
+                // res.write(promises.length + '-start\n', 'utf-8');
 
                 async.parallelLimit(promises, 10, function(err, results) {
 
@@ -420,7 +425,8 @@ exports.pages = function(req, res) {
                                 link: req.query.page,
                                 pages: results,
                                 manga: manga._id
-                            })
+                            });
+
                             chpr.save();
                             res.end();
                         });
@@ -440,7 +446,7 @@ exports.pages = function(req, res) {
 function setOptions(req, url, method) {
 
     var cookies;
-    if (req != null) {
+    if (req !== null) {
 
         cookies = req.headers.cookie;
     } else {
@@ -475,14 +481,14 @@ function requestp(options) {
                 var encoding = res.headers['content-encoding'];
                 if (encoding == 'gzip') {
                     zlib.gunzip(buffer, function(err, decoded) {
-                        resolve(decoded.toString())
+                        resolve(decoded.toString());
                     });
                 } else if (encoding == 'deflate') {
                     zlib.inflate(buffer, function(err, decoded) {
-                        resolve(decoded.toString())
+                        resolve(decoded.toString());
                     })
                 } else {
-                    resolve(buffer.toString())
+                    resolve(buffer.toString());
                 }
             });
         });
@@ -508,46 +514,39 @@ function makePageFunction(url, response, page) {
                 var encoding = res.headers['content-encoding'];
                 if (encoding == 'gzip') {
                     zlib.gunzip(buffer, function(err, decoded) {
-                        var image = handleImage(decoded.toString());
-                        if (image === null) {
-                            resp.write(-1 + '-failed');
-                            callback(new Error("failed to get an image"), null);
-                            return;
-                        }
-
-                        resp.write(page + '-' + image + '\n');
-                        callback(null, image);
+                        var image = findImage(decoded.toString());
+                        handleImage(image, resp, page, callback);
                     });
-                } else if (encoding == 'deflate') {
-                    zlib.inflate(buffer, function(err, decoded) {
-                        var image = handleImage(decoded.toString());
-                        if (image === null) {
-                            resp.write(-1 + '-failed');
-                            callback(new Error("failed to get an image"), null);
-                            return;
-                        }
-                        resp.write(page + '-' + image + '\n');
-                        callback(null, image);
-                    })
                 } else {
-                    var image = handleImage(buffer.toString());
-                    if (image === null) {
-                        resp.write(-1 + '-failed');
-                        callback(new Error("failed to get an image"), null);
-                        return;
-                    }
-                    if (image !== undefined) {
-                        resp.write(page + '-' + image + '\n');
-                    }
-                    callback(null, image)
+                    var image = findImage(buffer.toString());
+                    handleImage(image, resp, page, callback);
                 }
             });
         });
-    }
+    };
 }
 
-function handleImage(html) {
+function findImage(html) {
     var $ = cheerio.load(html);
     var image = $('#comic_page').attr('src');
     return image;
+}
+
+function handleImage(image, resp, page, callback) {
+    if (image === null) {
+        resp.write(JSON.stringify({
+            page: -1,
+            link: 'failed'
+        }) + '\n');
+        // resp.write(-1 + '-failed');
+        callback(new Error("failed to get an image"), null);
+        return;
+    }
+
+    resp.write(JSON.stringify({
+        page: page,
+        link: image
+    }) + '\n');
+    // resp.write(page + '-' + image + '\n');
+    callback(null, image);
 }
