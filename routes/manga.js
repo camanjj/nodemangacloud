@@ -29,8 +29,9 @@ exports.fetchUpdates = function(req, res) {
             var self = $(this);
             if ($(this).find('td').length == 2) {
                 //used to ignore the first blank row
-                if (mpi != null)
+                if (mpi !== undefined)
                     mpis.push(mpi);
+
                 mpi = {};
                 mpi.chapters = [];
                 //gets the image element
@@ -185,8 +186,6 @@ exports.info = function(req, res) {
         console.error("%s; %s", err.message, url);
         console.log("%j", err.res.statusCode);
     });
-
-
 };
 
 exports.follows = function(req, res) {
@@ -337,11 +336,9 @@ exports.pages = function(req, res) {
 
         var images = [];
 
-        if (!numberOfPages) { //webtoon mode
-
+        if (!numberOfPages) { //webtoon mode or occurs when the there are currently no pages in the chapter
 
             var chapter_select = $('select[name=chapter_select]').first();
-
 
             //this occurs when the manga page does not exist
             //for example this occurs when the link exist but the manga is put on hold
@@ -364,80 +361,58 @@ exports.pages = function(req, res) {
             res.write('', 'utf-8'); //just to send a response to the client
 
             var imageLink = $('#comic_page').attr('src');
+            images.push(imageLink);
 
-            if (imageLink.indexOf('img0000') != -1 && false) { //new manga.js
+            var mangaAll = $('.moderation_bar ul li a').first();
+            var link = mangaAll.attr('href');
+            var mId = link.substr(link.lastIndexOf('r'));
+            var mName = mangaAll.text();
 
-                var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
-                var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
-                for (var i = 1; i <= numberOfPages; i++) {
-                    var page = numeral(i * .000001).format('.000000');
-                    page = page.substring(1);
+            var promises = [];
+            $('#page_select').first().find('option').each(function(e, el) {
+                var url = $(this).val();
+                var func = makePageFunction(url, res, e + 1);
+                promises.push(func);
+            });
 
-                    images.push(prefix + page + suffix);
+            //inital response indicating the amount of pages
+            var p = {
+                page: promises.length,
+                link: 'start'
+            };
+            res.write(JSON.stringify(p) + '\n');
+
+            async.parallelLimit(promises, 10, function(err, results) {
+
+                if (err === undefined) {
+                    //need to check if the manga exist and if the chapter exist
+                    var Manga = models.mangaModel;
+                    Manga.findOne({
+                        'mangaId': mId
+                    }).exec(function(err, manga) {
+                        if (manga === null) {
+                            manga = new Manga({
+                                mangaId: mId,
+                                mangaName: mName
+                            });
+                            manga.save();
+                        }
+
+                        var chpr = new Chapter({
+                            link: req.query.page,
+                            pages: results,
+                            manga: manga._id
+                        });
+
+                        chpr.save();
+                        res.end();
+                    });
+                } else {
+                    console.log(err);
+                    res.end();
                 }
 
-                res.send(images);
-            } else { //old manga.js
-
-                console.log('old manga.js');
-
-                //                    var imageLink = $('#comic_page').attr('src');
-                images.push(imageLink);
-
-                var mangaAll = $('.moderation_bar ul li a').first();
-                var link = mangaAll.attr('href');
-                var mId = link.substr(link.lastIndexOf('r'));
-                var mName = mangaAll.text();
-
-                var promises = [];
-                $('#page_select').first().find('option').each(function(e, el) {
-                    var url = $(this).val();
-                    var func = makePageFunction(url, res, e + 1);
-                    promises.push(func);
-                });
-
-
-                var p = {
-                    page: promises.length,
-                    link: 'start'
-                };
-
-                res.write(JSON.stringify(p) + '\n');
-                // res.write(promises.length + '-start\n', 'utf-8');
-
-                async.parallelLimit(promises, 10, function(err, results) {
-
-                    if (!err) {
-                        //need to check if the manga exist and if the chapter exist
-                        var Manga = models.mangaModel;
-                        Manga.findOne({
-                            'mangaId': mId
-                        }).exec(function(err, manga) {
-                            if (manga === null) {
-                                manga = new Manga({
-                                    mangaId: mId,
-                                    mangaName: mName
-                                });
-                                manga.save();
-                            }
-
-                            var chpr = new Chapter({
-                                link: req.query.page,
-                                pages: results,
-                                manga: manga._id
-                            });
-
-                            chpr.save();
-                            res.end();
-                        });
-                    } else {
-                        console.log(err);
-                        res.end();
-                    }
-
-                });
-
-            }
+            });
 
         }
     });
@@ -486,7 +461,7 @@ function requestp(options) {
                 } else if (encoding == 'deflate') {
                     zlib.inflate(buffer, function(err, decoded) {
                         resolve(decoded.toString());
-                    })
+                    });
                 } else {
                     resolve(buffer.toString());
                 }
@@ -533,13 +508,16 @@ function findImage(html) {
 }
 
 function handleImage(image, resp, page, callback) {
-    if (image === null) {
+
+
+    if (image === undefined) {
         resp.write(JSON.stringify({
             page: -1,
             link: 'failed'
         }) + '\n');
-        // resp.write(-1 + '-failed');
-        callback(new Error("failed to get an image"), null);
+
+
+        callback(new Error("Failed to get an image"), null);
         return;
     }
 
@@ -547,6 +525,7 @@ function handleImage(image, resp, page, callback) {
         page: page,
         link: image
     }) + '\n');
-    // resp.write(page + '-' + image + '\n');
+
+
     callback(null, image);
 }
