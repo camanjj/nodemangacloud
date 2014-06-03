@@ -17,7 +17,8 @@ exports.createNews = function(request, response) {
     var news = new News({
         title: object.title,
         message: object.message,
-        status: object.status
+        status: object.status,
+        version: object.version
     });
 
 
