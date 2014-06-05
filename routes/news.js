@@ -74,6 +74,12 @@ exports.fetchNews = function(request, response) {
         .select('title message createdAt status')
         .limit(10);
 
+
+
+
+    if (request.query.version === 'beta') {} else
+        query.where('version').ne('beta');
+
     query.exec().then(function(news) {
         response.send(news);
     }, function(error) {
@@ -89,17 +95,21 @@ exports.newsSince = function(request, response) {
     var date = new Date(request.body.date);
 
     //query to find any 'URGENT' news that was made after the date passed
-    News
+    var query = News
         .findOne({})
         .where('status').equals('Urgent')
-        .where('createdAt').gt(date)
-        .exec(function(error, model) {
+        .where('createdAt').gt(date);
 
-            if (error || !model) {
-                response.send(204, {});
-            } else {
-                response.send(model);
-            }
+    if (request.query.version === 'beta') {} else
+        query.where('version').ne('beta');
 
-        });
+    query.exec(function(error, model) {
+
+        if (error || !model) {
+            response.send(204, {});
+        } else {
+            response.send(model);
+        }
+
+    });
 };
