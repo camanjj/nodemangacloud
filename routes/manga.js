@@ -7,10 +7,10 @@ var Promise = require('promise');
 var async = require('async');
 var models = require('./model');
 
-exports.fetchUpdates = function(req, res) {
+exports.fetchUpdates = function (req, res) {
 
-    var pageLink = "";
-    if (!req.query.page || req.query.page === 1)
+    var pageLink;
+    if (!req.query.page || req.query.page === 1) 
         pageLink = 'http://www.batoto.net';
     else {
         //allows paging to the request
@@ -93,11 +93,12 @@ exports.info = function(req, res) {
         manga.image = infoTable.find('img').first().attr('src');
 
 
-        //if the user if signed in then it shows if the user is currently following the manga.js or not
+        //if the user is signed in, show if the user is currently following the manga.js or not
         var followingSection = $('div.__like.right a').first();
         if (followingSection.length > 0) {
             manga.following = followingSection.text().indexOf('Unfollow') !== -1;
-            manga.followers = $('div.__like.right strong').first().text(); // gets the amount of people that are following the manga.js
+            // gets the amount of people that are following the manga
+            manga.followers = $('div.__like.right strong').first().text(); 
         }
 
         manga.mature = infoTable.children('div').last().text();
@@ -382,7 +383,7 @@ exports.pages = function(req, res) {
             };
             res.write(JSON.stringify(p) + '\n');
 
-            async.parallelLimit(promises, 10, function(err, results) {
+            async.parallelLimit(promises, 5, function(err, results) {
 
                 if (err === undefined) {
                     //need to check if the manga exist and if the chapter exist
@@ -510,12 +511,13 @@ function findImage(html) {
 function handleImage(image, resp, page, callback) {
 
 
+    console.log(image);
+
     if (image === undefined) {
         resp.write(JSON.stringify({
             page: -1,
             link: 'failed'
         }) + '\n');
-
 
         callback(new Error("Failed to get an image"), null);
         return;
