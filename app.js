@@ -16,7 +16,7 @@ var news = require('./routes/news');
 var http = require('http');
 var path = require('path');
 var bodyParser = require('body-parser');
-var morgan = require('morgan')
+var morgan = require('morgan');
 var serveStatic = require('serve-static');
 var mongoose = require('mongoose');
 
@@ -31,7 +31,7 @@ app.set('view engine', 'jade');
 app.use(bodyParser());
 app.use(morgan('short'));
 app.use(require('body-parser')());
-app.use(require('method-override')())
+app.use(require('method-override')());
 //app.use(express.favicon());
 //app.use(app.router);
 //app.use(express.static(path.join(__dirname, 'public')));

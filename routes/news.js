@@ -7,6 +7,8 @@ var Promise = require('promise');
 
 exports.createNews = function(request, response) {
 
+
+    //stop people from creating news with a secret key
     if (request.body.key !== 'XttygSrvcWEnc4sJXr') {
         response.send(500, 'Need key');
         return;
@@ -36,6 +38,7 @@ exports.editNews = function(request, response) {
 
     var News = models.newsModel;
 
+    //stop people from accessing the news with a secret key
     if (request.body.key !== 'XttygSrvcWEnc4sJXr') {
         response.send(500, 'Need key');
         return;
@@ -43,7 +46,7 @@ exports.editNews = function(request, response) {
 
     var objectId = request.body.id;
     var newMessage = request.body.message;
-    console.log(newMessage);
+    // console.log(newMessage); //debug point
 
     News.update({
             _id: objectId
@@ -73,9 +76,6 @@ exports.fetchNews = function(request, response) {
         .sort('-createdAt')
         .select('title message createdAt status')
         .limit(10);
-
-
-
 
     if (request.query.version === 'beta') {} else
         query.where('version').ne('beta');
