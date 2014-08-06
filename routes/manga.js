@@ -383,7 +383,8 @@ exports.pages = function(req, res) {
             };
             res.write(JSON.stringify(p) + '\n');
 
-            async.parallelLimit(promises, 5, function(err, results) {
+            async.parallelLimit(promises, 4, function(err, results) {
+            // async.series(promises, function(err, results){
 
                 if (err === undefined) {
                     //need to check if the manga exist and if the chapter exist
@@ -515,7 +516,7 @@ function handleImage(image, resp, page, callback) {
 
     if (image === undefined) {
         resp.write(JSON.stringify({
-            page: -1,
+            page: page,
             link: 'failed'
         }) + '\n');
 
