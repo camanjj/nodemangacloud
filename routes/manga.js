@@ -7,6 +7,12 @@ var Promise = require('promise');
 var async = require('async');
 var models = require('./model');
 
+// http://www.batoto.net/comic/_/comics/shoulder-tacke-yasuzaki-man-r12807
+
+function getMangaIdFromString(link){
+    return link.substring(link.lastIndexOf('-')+1);
+}
+
 exports.fetchUpdates = function (req, res) {
 
     var pageLink;
@@ -39,6 +45,7 @@ exports.fetchUpdates = function (req, res) {
                 mpi.imageLink = image.attr('src');
                 mpi.link = image.parent().attr('href');
                 mpi.title = $(this).find('td a').last().text();
+                mpi.mangaId = getMangaIdFromString(mpi.link);
 
             } else {
 
@@ -88,6 +95,8 @@ exports.info = function(req, res) {
         var manga = {};
 
         manga.title = $('.ipsType_pagetitle').first().text().trim();
+        manga.link = req.query.page;
+        manga.mangaId = getMangaIdFromString(manga.link);
 
         var infoTable = $('.ipsBox').first();
         manga.image = infoTable.find('img').first().attr('src');
@@ -218,6 +227,7 @@ exports.follows = function(req, res) {
                         var title = $(this).find('a').first();
                         mpi.title = title.text();
                         mpi.link = title.attr('href');
+                        mpi.mangaId = getMangaIdFromString(mpi.link);
 
                         var chapterTitle = $(this).find('a').last();
                         chapter.title = chapterTitle.text();
@@ -276,6 +286,7 @@ exports.search = function(req, res) {
 
                 result.title = title.text();
                 result.link = title.attr('href');
+                result.mangaId = getMangaIdFromString(result.link);
 
                 if (result.title !== "")
                     results.push(result);
