@@ -137,7 +137,7 @@ exports.follow = function(req, res) {
             var action = params.action === ('follow') ? 'save' : 'unset';
 
             //to follow set do equal to save, to unfollow set do equal to unset
-            var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', params.session, action, params.sKey, params.rid);
+            var url = util.format('http://bato.to/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', params.session, action, params.sKey, params.rid);
             fetchPage(url, req, res, function(response, body) {
 
 
@@ -163,7 +163,7 @@ exports.follow = function(req, res) {
 
 
         //to follow set do equal to save, to unfollow set do equal to unset
-        var url = util.format('http://www.batoto.net/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', session, action, key, rid);
+        var url = util.format('http://bato.to/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', session, action, key, rid);
         fetchPage(url, req, res, function(response, body) {
 
 

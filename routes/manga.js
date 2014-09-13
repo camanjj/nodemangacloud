@@ -7,7 +7,9 @@ var Promise = require('promise');
 var async = require('async');
 var models = require('./model');
 
-// http://www.batoto.net/comic/_/comics/shoulder-tacke-yasuzaki-man-r12807
+
+var baseUrl = "http://bato.to";
+//baseUrl + /comic/_/comics/shoulder-tacke-yasuzaki-man-r12807
 
 function getMangaIdFromString(link){
     return link.substring(link.lastIndexOf('-')+1);
@@ -17,10 +19,10 @@ exports.fetchUpdates = function (req, res) {
 
     var pageLink;
     if (!req.query.page || req.query.page === 1) 
-        pageLink = 'http://www.batoto.net';
+        pageLink = baseUrl;
     else {
         //allows paging to the request
-        pageLink = util.format('http://www.batoto.net?p=%d', req.query.page);
+        pageLink = util.format(baseUrl + '?p=%d', req.query.page);
     }
 
     setOptions(req, pageLink, 'GET').then(requestp).then(function(data) {
@@ -204,9 +206,9 @@ exports.follows = function(req, res) {
     var pageLink = '';
 
     if (!req.query.page || req.query.page === 1)
-        pageLink = 'http://www.batoto.net/myfollows';
+        pageLink = baseUrl + '/myfollows';
     else {
-        pageLink = util.format('http://www.batoto.net/myfollows?p=%d', req.query.page);
+        pageLink = util.format(baseUrl + '/myfollows?p=%d', req.query.page);
     }
 
     setOptions(req, pageLink, 'GET').then(requestp).then(function(data) {
@@ -269,7 +271,7 @@ exports.follows = function(req, res) {
 exports.search = function(req, res) {
 
     var term = req.query.term;
-    var url = util.format('http://www.batoto.net/search?name=%s&name_cond=c&dosubmit=Search', term);
+    var url = util.format(baseUrl + '/search?name=%s&name_cond=c&dosubmit=Search', term);
 
     setOptions(req, url, 'GET').then(requestp).then(function(data) {
 
