@@ -181,7 +181,7 @@ exports.info = function(req, res) {
 
             });
 
-            if ($(this).attr('id') !== 'no_chap_avl')
+            if ($(this).attr('id') !== 'no_chap_avl' && chapter.updateTime !== undefined)
                 chapters.push(chapter);
 
         });

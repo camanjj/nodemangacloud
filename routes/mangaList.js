@@ -403,8 +403,8 @@ function parseInfo(response, body) {
             }
 
         });
-
-        if ($(this).attr('id') !== 'no_chap_avl')
+        console.log(Object.keys(chapter));
+        if ($(this).attr('id') !== 'no_chap_avl' && 'updateTime' in Object.keys(chapter) )//change this when updating the chapter info
             chapters.push(chapter);
 
     });
