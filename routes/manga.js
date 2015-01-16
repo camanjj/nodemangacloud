@@ -268,6 +268,48 @@ exports.follows = function(req, res) {
     });
 };
 
+exports.listFollows = function(req, res){
+
+    var pageLink = baseUrl + '/myfollows';
+
+    setOptions(req, pageLink, 'GET').then(requestp).then(function(data) {
+
+        console.log('Got page');
+        var $ = cheerio.load(data);
+
+        var mpis = [];
+
+        var firstElement = null;
+
+        $('div a[href^="/comic/_/comics/"]').each(function(i, element){
+           if (firstElement === null && $(this).text()){
+                var manga = {};
+                manga.id = getMangaIdFromString($(this).attr('href'));
+                manga.link = baseUrl + $(this).attr('href');
+                manga.title = $(this).text();
+
+
+                mpis.push(manga);
+
+           }
+        });
+
+       
+
+        // console.log(firstElement);
+
+
+        res.send(mpis);
+
+    }, function(error) {
+        res.send(500, {
+            'error': "error connecting to batoto"
+        });
+        console.error("%s; %s", err.message, url);
+        console.log("%j", err.res.statusCode);
+    });
+}
+
 exports.search = function(req, res) {
 
     var term = req.query.term;

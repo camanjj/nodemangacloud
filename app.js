@@ -28,9 +28,12 @@ app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(bodyParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+
 app.use(morgan('short'));
-app.use(require('body-parser')());
 app.use(require('method-override')());
 //app.use(express.favicon());
 //app.use(app.router);
@@ -66,6 +69,7 @@ app.get('/message', info.message);
 app.get('/updates', test.fetchUpdates);
 app.get('/info', test.info);
 app.get('/follows', test.follows);
+app.get('/all/follows', test.listFollows);
 app.get('/search', test.search);
 app.get('/pages', test.pages);
 
