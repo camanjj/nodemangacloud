@@ -15,6 +15,15 @@ function getMangaIdFromString(link){
     return link.substring(link.lastIndexOf('-')+1);
 }
 
+function getRealImageFromThumbnail(link){
+    var baseImageUrl = 'http://img.batoto.net/forums/uploads/';
+
+    var arr = link.split('/');
+    var imageToken = arr[arr.length-1];
+
+    return baseImageUrl + imageToken;
+}
+
 exports.fetchUpdates = function (req, res) {
 
     var pageLink;
@@ -45,6 +54,7 @@ exports.fetchUpdates = function (req, res) {
                 //gets the image element
                 var image = $(this).find('img').first();
                 mpi.imageLink = image.attr('src');
+                mpi.imageLink = "http://s0ivpv.cloudimage.io/s/crop/320x100/" + getRealImageFromThumbnail(mpi.imageLink);
                 mpi.link = image.parent().attr('href');
                 mpi.title = $(this).find('td a').last().text();
                 mpi.mangaId = getMangaIdFromString(mpi.link);
