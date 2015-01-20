@@ -140,7 +140,11 @@ exports.info = function(req, res) {
                     manga.artist = tableData;
                     break;
                 case 3:
-                    manga.genre = tableData;
+                    manga.genre = []
+                    $(this).find('a span').each(function(i, element){
+                        manga.genre.push($(this).text().trim());
+                    });
+                    // manga.genre = tableData;
                     break;
                 case 4:
                     manga.mangaType = tableData;
@@ -168,7 +172,7 @@ exports.info = function(req, res) {
 
                     case 0:
                         var title = $(this).find('a').first();
-                        chapter.title = title.text();
+                        chapter.title = title.text().trim();
                         chapter.link = title.attr('href');
                         break;
                     case 1:
