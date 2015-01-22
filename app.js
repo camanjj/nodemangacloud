@@ -39,12 +39,20 @@ app.use(require('method-override')());
 //app.use(app.router);
 //app.use(express.static(path.join(__dirname, 'public')));
 
-var DATABASE_URL = 'mongodb://camanjj:bankai8998@oceanic.mongohq.com:10097/app22035243';
+var DATABASE_URL = '';
 
 // development only
 if ('development' == app.get('env')) {
     DATABASE_URL = 'mongodb://127.0.0.1:27017';
     app.use(require('errorhandler')());
+} else {
+    if (process.env.MONGOHQ_URL){
+        //production databse -> this is still a sandbox
+        DATABASE_URL = process.env.MONGOHQ_URL;
+    } else {
+        //this one is gonne be used for the dev server on heroku
+        DATABASE_URL = process.env.MONGOLAB_URI;
+    }
 }
 
 

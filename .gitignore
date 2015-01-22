@@ -4,3 +4,4 @@ out/*
 newrelic_agent.log
 NodeMangaCloud.sublime-project
 NodeMangaCloud.sublime-workspace
+*.pyc
