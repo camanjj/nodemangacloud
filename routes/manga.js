@@ -7,22 +7,12 @@ var Promise = require('promise');
 var async = require('async');
 var models = require('./model');
 
+var helper = require('./helper');
+
 
 var baseUrl = "http://bato.to";
 //baseUrl + /comic/_/comics/shoulder-tacke-yasuzaki-man-r12807
 
-function getMangaIdFromString(link){
-    return link.substring(link.lastIndexOf('-')+1);
-}
-
-function getRealImageFromThumbnail(link){
-    var baseImageUrl = 'http://img.batoto.net/forums/uploads/';
-
-    var arr = link.split('/');
-    var imageToken = arr[arr.length-1];
-
-    return baseImageUrl + imageToken;
-}
 
 exports.fetchUpdates = function (req, res) {
 
@@ -34,7 +24,9 @@ exports.fetchUpdates = function (req, res) {
         pageLink = util.format(baseUrl + '?p=%d', req.query.page);
     }
 
-    setOptions(req, pageLink, 'GET').then(requestp).then(function(data) {
+    helper.setOptions(req, pageLink, 'GET').then(helper.requestp).then(function(data) {
+
+        console.log('scan updates');
 
 
         var $ = cheerio.load(data.toString());
@@ -54,10 +46,10 @@ exports.fetchUpdates = function (req, res) {
                 //gets the image element
                 var image = $(this).find('img').first();
                 mpi.imageLink = image.attr('src');
-                mpi.imageLink = "http://s0ivpv.cloudimage.io/s/crop/320x100/" + getRealImageFromThumbnail(mpi.imageLink);
+                mpi.imageLink = "http://s0ivpv.cloudimage.io/s/crop/320x100/" + helper.getImageFromThumbnail(mpi.imageLink);
                 mpi.link = image.parent().attr('href');
                 mpi.title = $(this).find('td a').last().text();
-                mpi.mangaId = getMangaIdFromString(mpi.link);
+                mpi.mangaId = helper.getMangaIdFromString(mpi.link);
 
             } else {
 
@@ -101,14 +93,14 @@ exports.info = function(req, res) {
         return;
     }
 
-    setOptions(req, req.query.page, 'GET').then(requestp).then(function(data) {
+    helper.setOptions(req, req.query.page, 'GET').then(helper.requestp).then(function(data) {
 
         var $ = cheerio.load(data.toString());
         var manga = {};
 
         manga.title = $('.ipsType_pagetitle').first().text().trim();
         manga.link = req.query.page;
-        manga.mangaId = getMangaIdFromString(manga.link);
+        manga.mangaId = helper.getMangaIdFromString(manga.link);
 
         var infoTable = $('.ipsBox').first();
         manga.image = infoTable.find('img').first().attr('src');
@@ -225,7 +217,7 @@ exports.follows = function(req, res) {
         pageLink = util.format(baseUrl + '/myfollows?p=%d', req.query.page);
     }
 
-    setOptions(req, pageLink, 'GET').then(requestp).then(function(data) {
+    helper.setOptions(req, pageLink, 'GET').then(helper.requestp).then(function(data) {
 
         var $ = cheerio.load(data);
 
@@ -243,7 +235,7 @@ exports.follows = function(req, res) {
                         var title = $(this).find('a').first();
                         mpi.title = title.text();
                         mpi.link = title.attr('href');
-                        mpi.mangaId = getMangaIdFromString(mpi.link);
+                        mpi.mangaId = helper.getMangaIdFromString(mpi.link);
 
                         var chapterTitle = $(this).find('a').last();
                         chapter.title = chapterTitle.text();
@@ -286,7 +278,7 @@ exports.listFollows = function(req, res){
 
     var pageLink = baseUrl + '/myfollows';
 
-    setOptions(req, pageLink, 'GET').then(requestp).then(function(data) {
+    helper.setOptions(req, pageLink, 'GET').then(helper.requestp).then(function(data) {
 
         console.log('Got page');
         var $ = cheerio.load(data);
@@ -298,7 +290,7 @@ exports.listFollows = function(req, res){
         $('div a[href^="/comic/_/comics/"]').each(function(i, element){
            if (firstElement === null && $(this).text()){
                 var manga = {};
-                manga.id = getMangaIdFromString($(this).attr('href'));
+                manga.id = helper.getMangaIdFromString($(this).attr('href'));
                 manga.link = baseUrl + $(this).attr('href');
                 manga.title = $(this).text();
 
@@ -329,7 +321,7 @@ exports.search = function(req, res) {
     var term = req.query.term;
     var url = util.format(baseUrl + '/search?name=%s&name_cond=c&dosubmit=Search', term);
 
-    setOptions(req, url, 'GET').then(requestp).then(function(data) {
+    helper.setOptions(req, url, 'GET').then(helper.requestp).then(function(data) {
 
         var $ = cheerio.load(data);
 
@@ -344,7 +336,7 @@ exports.search = function(req, res) {
 
                 result.title = title.text();
                 result.link = title.attr('href');
-                result.mangaId = getMangaIdFromString(result.link);
+                result.mangaId = helper.getMangaIdFromString(result.link);
 
                 if (result.title !== "")
                     results.push(result);
@@ -392,7 +384,7 @@ exports.pages = function(req, res) {
 
         console.log(error);
         if (error !== 'stop')
-            return setOptions(req, req.query.page, 'GET');
+            return helper.setOptions(req, req.query.page, 'GET');
 
     }).then(requestp).then(function(data) {
 
@@ -441,7 +433,7 @@ exports.pages = function(req, res) {
             var promises = [];
             $('#page_select').first().find('option').each(function(e, el) {
                 var url = $(this).val();
-                var func = makePageFunction(url, res, e + 1);
+                var func = helper.makePageFunction(url, res, e + 1);
                 promises.push(func);
             });
 
@@ -488,116 +480,3 @@ exports.pages = function(req, res) {
         }
     });
 };
-
-function setOptions(req, url, method) {
-
-    var cookies;
-    if (req !== null) {
-
-        cookies = req.headers.cookie;
-    } else {
-        cookies = stringCookies;
-    }
-    var options = {
-        uri: url,
-        method: method,
-        headers: {
-            'content-type': 'text/html',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'accept-encoding': "gzip,deflate",
-            'Connection': 'keep-alive',
-            'Cookie': cookies
-        }
-    };
-
-    return Promise.resolve(options);
-}
-
-function requestp(options) {
-    return new Promise(function(resolve, reject) {
-        var req = request(options);
-        req.on('response', function(res) {
-            var chunks = [];
-            res.on('data', function(chunk) {
-                chunks.push(chunk);
-            });
-
-            res.on('end', function() {
-                var buffer = Buffer.concat(chunks);
-                var encoding = res.headers['content-encoding'];
-                if (encoding == 'gzip') {
-                    zlib.gunzip(buffer, function(err, decoded) {
-                        resolve(decoded.toString());
-                    });
-                } else if (encoding == 'deflate') {
-                    zlib.inflate(buffer, function(err, decoded) {
-                        resolve(decoded.toString());
-                    });
-                } else {
-                    resolve(buffer.toString());
-                }
-            });
-        });
-    });
-}
-
-function makePageFunction(url, response, page) {
-
-    return function(callback) {
-        var resp = response;
-        var req = request({
-            url: url
-        });
-        req.on('response', function(res) {
-
-            var chunks = [];
-            res.on('data', function(chunk) {
-                chunks.push(chunk);
-            });
-
-            res.on('end', function() {
-                var buffer = Buffer.concat(chunks);
-                var encoding = res.headers['content-encoding'];
-                if (encoding == 'gzip') {
-                    zlib.gunzip(buffer, function(err, decoded) {
-                        var image = findImage(decoded.toString());
-                        handleImage(image, resp, page, callback);
-                    });
-                } else {
-                    var image = findImage(buffer.toString());
-                    handleImage(image, resp, page, callback);
-                }
-            });
-        });
-    };
-}
-
-function findImage(html) {
-    var $ = cheerio.load(html);
-    var image = $('#comic_page').attr('src');
-    return image;
-}
-
-function handleImage(image, resp, page, callback) {
-
-
-    console.log(image);
-
-    if (image === undefined) {
-        resp.write(JSON.stringify({
-            page: page,
-            link: 'failed'
-        }) + '\n');
-
-        callback(new Error("Failed to get an image"), null);
-        return;
-    }
-
-    resp.write(JSON.stringify({
-        page: page,
-        link: image
-    }) + '\n');
-
-
-    callback(null, image);
-}
