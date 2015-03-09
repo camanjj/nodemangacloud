@@ -481,3 +481,61 @@ exports.pages = function(req, res) {
         }
     });
 };
+
+
+/**
+ *  follows or unfollows a manga.js
+ *  @param {Request} req - request hat has the cookies for credentialing
+ *  @property {object} req.headers.cookie -  cookies need for credentialing
+ *  @property {object} params.action - follow/unfollow
+ *  @property {strng} params.rid - the id for the manga.js
+ *  @property {object} params.sKey - the key needed to follow manga.js
+ *  @property {object} params.session - the seesion id for the user
+ */
+exports.follow = function(req, res) {
+
+    var key = req.body.sKey;
+
+    console.log(key)
+
+    
+        var action = req.body.action === 'follow' ? 'save' : 'unset';
+        var session = req.body.session;
+        var rid = (req.body.rid).substr(1);
+
+
+        //to follow set do equal to save, to unfollow set do equal to unset
+        var url = util.format('http://bato.to/forums/index.php?s=%s&&app=core&module=ajax&section=like&do=%s&secure_key=%s&f_app=ccs&f_area=ccs_custom_database_3_records&f_relid=%s', session, action, key, rid);
+        helper.setOptions(req, url, 'POST').then(function(options){
+
+            options['form'] = {
+                'like_notify': 1,
+                'like_freq': 'immediate',
+                'like_anon': 0
+            };
+            
+            return helper.requestp(options);
+
+        }).then(function(data) {
+
+            console.log("Got the data")
+
+            //stores the html in a cheerio object
+            var $ = cheerio.load(data);
+            var text = $('a').first().text();
+
+            var result = {};
+
+
+            if (action === 'save') {
+                //returns bool representing if the follow was a success
+                result.success = text === 'Unfollow';
+                res.send(result);
+            } else {
+                //returns bool representing if the unfollow was a success
+                result.success = text === 'Follow';
+                res.send(result);
+            }
+
+        });
+};

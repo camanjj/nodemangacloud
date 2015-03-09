@@ -10,9 +10,6 @@ function setOptions(req, url, method) {
     if (req !== null) {
         //get the cookies from the request header
         cookies = req.headers.cookie;
-    } else {
-        //!!! dont really know why I put this here
-        cookies = stringCookies;
     }
 
     //set the request options

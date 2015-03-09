@@ -65,7 +65,7 @@ app.get('/read', manga.read);
 
 
 app.post('/login', manga.login);
-app.post('/follow', manga.follow);
+app.post('/follow', test.follow);
 //app.get('/follows', manga.follows);
 
 //app.post('/search', manga.search);
