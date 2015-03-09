@@ -1,6 +1,7 @@
 var Promise = require('promise');
 var request = require('request');
 var zlib = require('zlib');
+var cheerio = require('cheerio');
 
 
 function setOptions(req, url, method) {
@@ -24,7 +25,8 @@ function setOptions(req, url, method) {
             'accept-encoding': "gzip,deflate",
             'Connection': 'keep-alive',
             'Cookie': cookies
-        }
+        },
+        gzip: true
     };
 
     //send back the options for the request in a promise
@@ -33,28 +35,8 @@ function setOptions(req, url, method) {
 
 function requestp(options) {
     return new Promise(function(resolve, reject) {
-        var req = request(options);
-        req.on('response', function(res) {
-            var chunks = [];
-            res.on('data', function(chunk) {
-                chunks.push(chunk);
-            });
-
-            res.on('end', function() {
-                var buffer = Buffer.concat(chunks);
-                var encoding = res.headers['content-encoding'];
-                if (encoding == 'gzip') {
-                    zlib.gunzip(buffer, function(err, decoded) {
-                        resolve(decoded.toString());
-                    });
-                } else if (encoding == 'deflate') {
-                    zlib.inflate(buffer, function(err, decoded) {
-                        resolve(decoded.toString());
-                    });
-                } else {
-                    resolve(buffer.toString());
-                }
-            });
+        var req = request(options, function(error, response, body){
+            resolve(body)
         });
     });
 }
@@ -64,29 +46,13 @@ function makePageFunction(url, response, page) {
     return function(callback) {
         var resp = response;
         var req = request({
-            url: url
+            url: url,
+            gzip: true,
+        }, function(error, response, body){
+            var image = findImage(body)
+            handleImage(image, resp, page, callback);
         });
-        req.on('response', function(res) {
 
-            var chunks = [];
-            res.on('data', function(chunk) {
-                chunks.push(chunk);
-            });
-
-            res.on('end', function() {
-                var buffer = Buffer.concat(chunks);
-                var encoding = res.headers['content-encoding'];
-                if (encoding == 'gzip') {
-                    zlib.gunzip(buffer, function(err, decoded) {
-                        var image = findImage(decoded.toString());
-                        handleImage(image, resp, page, callback);
-                    });
-                } else {
-                    var image = findImage(buffer.toString());
-                    handleImage(image, resp, page, callback);
-                }
-            });
-        });
     };
 }
 
@@ -98,9 +64,6 @@ function findImage(html) {
 }
 
 function handleImage(image, resp, page, callback) {
-
-    //debug line
-    // console.log(image);
 
     //handle an undefined image
     if (image === undefined) {

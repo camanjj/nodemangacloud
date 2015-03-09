@@ -369,6 +369,7 @@ exports.pages = function(req, res) {
         'link': req.query.page
     });
 
+    console.log("About to query")
     query.select('pages link');
     query.exec().then(function(chapter) {
 
@@ -377,7 +378,7 @@ exports.pages = function(req, res) {
             return Promise.done(); //ends the promise tree
         } else {
             console.log('Not in databse');
-            return setOptions(req, req.query.page, 'GET');
+            return helper.setOptions(req, req.query.page, 'GET');
         }
 
     }, function(error) {
@@ -386,7 +387,7 @@ exports.pages = function(req, res) {
         if (error !== 'stop')
             return helper.setOptions(req, req.query.page, 'GET');
 
-    }).then(requestp).then(function(data) {
+    }).then(helper.requestp).then(function(data) {
 
 
         console.log('got data');
