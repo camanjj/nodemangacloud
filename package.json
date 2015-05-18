@@ -21,7 +21,8 @@
     "request": "2.53.0",
     "numeral": "1.5.3",
     "cheerio": "0.18.0",
-    "newrelic": "1.14.7"
+    "newrelic": "1.14.7",
+    "sugar": "~1.4.1"
   },
   "subdomain": "mangacloud",
   "engines": {

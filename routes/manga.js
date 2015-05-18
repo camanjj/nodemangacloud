@@ -6,6 +6,7 @@ var util = require('util');
 var Promise = require('promise');
 var async = require('async');
 var models = require('./model');
+var sugar = require('sugar');
 
 var helper = require('./helper');
 
@@ -66,8 +67,11 @@ exports.fetchUpdates = function (req, res) {
                 chapter.group = groupInfo.text();
                 chapter.groupLink = groupInfo.attr('href');
 
-
-                chapter.updateTime = $(this).find('td').last().text().trim();
+                var updateTime = $(this).find('td').last().text().trim();
+                updateTime = updateTime.replace("-", "");
+                // console.log(updateTime);
+                // console.log(Date.create(updateTime))
+                chapter.updateTime = updateTime;//Date.create(updateTime);
 
                 //adds this chapter to the manga preview item
                 mpi.chapters.push(chapter);
@@ -300,10 +304,6 @@ exports.listFollows = function(req, res){
            }
         });
 
-       
-
-        // console.log(firstElement);
-
 
         res.send(mpis);
 
@@ -364,13 +364,13 @@ exports.pages = function(req, res) {
         return;
     }
 
-    var Chapter = models.chapterModel;
-    var query = Chapter.findOne({
+    var Manga = models.mangaModel;
+    var query = Manga.findOne({
         'link': req.query.page
     });
-
-    console.log("About to query")
     query.select('pages link');
+
+    //Check if the chapter is already saved in the database
     query.exec().then(function(chapter) {
 
         if (chapter !== null && chapter !== undefined) {
@@ -445,33 +445,27 @@ exports.pages = function(req, res) {
             };
             res.write(JSON.stringify(p) + '\n');
 
+            // get the pages asynchronisly 4 at a time
             async.parallelLimit(promises, 4, function(err, results) {
-            // async.series(promises, function(err, results){
 
                 if (err === undefined) {
-                    //need to check if the manga exist and if the chapter exist
-                    var Manga = models.mangaModel;
-                    Manga.findOne({
-                        'mangaId': mId
-                    }).exec(function(err, manga) {
-                        if (manga === null) {
-                            manga = new Manga({
-                                mangaId: mId,
-                                mangaName: mName
-                            });
-                            manga.save();
-                        }
 
-                        var chpr = new Chapter({
-                            link: req.query.page,
-                            pages: results,
-                            manga: manga._id
-                        });
+                    // Add the manga to the databse if there was no error
 
-                        chpr.save();
-                        res.end();
+                    var manga = new Manga({
+                        mangaId: mId,
+                        mangaName: mName,
+                        link: req.query.page,
+                        pages: results
                     });
+
+                    manga.save();
+
+                    //end the response
+                    res.end();
+
                 } else {
+                    // There was an error getting the manga pages
                     console.log(err);
                     res.end();
                 }
