@@ -3,7 +3,7 @@ var plan = require('flightplan');
 plan.target("staging", {
 	webRoot: '/cloud/mangaloop/staging',
 	host: 'staging.mangaloop.com',
-	username: 'mangauser',
+	username: 'manga',
 	agent: process.env.SSH_AUTH_SOCK
 });
 
@@ -11,16 +11,16 @@ plan.target("staging", {
 plan.target("prod", {
 	webRoot: '/cloud/mangaloop/prod',
 	host: 'api.mangaloop.com',
-	username: 'mangauser',
+	username: 'manga',
 	agent: process.env.SSH_AUTH_SOCK,
 	port: 4444,
 });
 
 
 plan.target('dev', {
-	// webRoot: '/cloud/mangaloop/dev',
+	webRoot: '/cloud/mangaloop/dev',
 	host: 'mangaloop.com',
-	username: 'mangauser',
+	username: 'manga',
 	// privateKey: '/Users/cameron/.ssh/id_rsa',
 	port: 4444,
 	agent: process.env.SSH_AUTH_SOCK
@@ -41,7 +41,7 @@ plan.remote('setup', function(transport){
 	// transport.exec('nvm alias default v0.11.16');
 	// transport.exec('nvm use default');
 
-	transport.sudo('npm install pm2 -g', {user: 'mangauser'});
+	transport.sudo('npm install pm2 -g', {user: 'manga'});
 
 });
 
