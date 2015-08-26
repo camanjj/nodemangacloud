@@ -426,16 +426,32 @@ exports.pages = function(req, res) {
 
             if (imageLink.indexOf('img0000') != -1) { //new manga.js
 
+                console.log("New Manga");
+
+                var numberOfPages = $('#page_select').first().find('option').length;
+
+                 var p = {
+                    page: numberOfPages,
+                    link: 'start'
+                };
+                res.write(JSON.stringify(p) + '\n');
+
                 var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
                 var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
                 for (var i = 1; i <= numberOfPages; i++) {
                     var page = numeral(i * .000001).format('.000000')
                     page = page.substring(1);
 
-                    images.push(prefix + page + suffix);
+                    link = (prefix + page + suffix);
 
-                } 
-                response.send(images);
+                    res.write(JSON.stringify({
+                        page: i,
+                        link: link
+                    }) + '\n');
+
+                }
+                // response.send(images);
+                res.end()
                 return
             }
 
