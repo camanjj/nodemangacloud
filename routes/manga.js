@@ -423,6 +423,8 @@ exports.pages = function(req, res) {
 
             var imageLink = $('#comic_page').attr('src');
 
+            res.set('Etag', 'stream');
+            res.write('', 'utf-8'); //just to send a response to the client
 
             if (imageLink.indexOf('img0000') != -1) { //new manga.js
 
@@ -459,8 +461,7 @@ exports.pages = function(req, res) {
 
             // Old manga page
 
-            res.set('Etag', 'stream');
-            res.write('', 'utf-8'); //just to send a response to the client
+            
 
             images.push(imageLink);
 
