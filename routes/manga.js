@@ -456,60 +456,61 @@ exports.pages = function(req, res) {
                 // response.send(images);
                 res.end()
                 return
+            } else {
+
+
+                // Old manga page
+
+                
+
+                images.push(imageLink);
+
+                var mangaAll = $('.moderation_bar ul li a').first();
+                var link = mangaAll.attr('href');
+                var mId = link.substr(link.lastIndexOf('r'));
+                var mName = mangaAll.text();
+
+                var promises = [];
+                $('#page_select').first().find('option').each(function(e, el) {
+                    var url = $(this).val();
+                    var func = helper.makePageFunction(url, res, e + 1);
+                    promises.push(func);
+                });
+
+                //inital response indicating the amount of pages
+                var p = {
+                    page: promises.length,
+                    link: 'start'
+                };
+                res.write(JSON.stringify(p) + '\n');
+
+                // get the pages asynchronisly 4 at a time
+                async.parallelLimit(promises, 4, function(err, results) {
+
+                    if (err === undefined) {
+
+                        // Add the manga to the databse if there was no error
+
+                        var manga = new Manga({
+                            mangaId: mId,
+                            mangaName: mName,
+                            link: req.query.page,
+                            pages: results
+                        });
+
+                        manga.save();
+
+                        //end the response
+                        res.end();
+
+                    } else {
+                        // There was an error getting the manga pages
+                        console.log(err);
+                        res.end();
+                    }
+
+                });
             }
-
-
-            // Old manga page
-
-            
-
-            images.push(imageLink);
-
-            var mangaAll = $('.moderation_bar ul li a').first();
-            var link = mangaAll.attr('href');
-            var mId = link.substr(link.lastIndexOf('r'));
-            var mName = mangaAll.text();
-
-            var promises = [];
-            $('#page_select').first().find('option').each(function(e, el) {
-                var url = $(this).val();
-                var func = helper.makePageFunction(url, res, e + 1);
-                promises.push(func);
-            });
-
-            //inital response indicating the amount of pages
-            var p = {
-                page: promises.length,
-                link: 'start'
-            };
-            res.write(JSON.stringify(p) + '\n');
-
-            // get the pages asynchronisly 4 at a time
-            async.parallelLimit(promises, 4, function(err, results) {
-
-                if (err === undefined) {
-
-                    // Add the manga to the databse if there was no error
-
-                    var manga = new Manga({
-                        mangaId: mId,
-                        mangaName: mName,
-                        link: req.query.page,
-                        pages: results
-                    });
-
-                    manga.save();
-
-                    //end the response
-                    res.end();
-
-                } else {
-                    // There was an error getting the manga pages
-                    console.log(err);
-                    res.end();
-                }
-
-            });
 
         }
     });
