@@ -436,6 +436,7 @@ exports.pages = function(req, res) {
                 };
                 res.write(JSON.stringify(p) + '\n');
 
+                //get the prefix and suffix of the image url
                 var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
                 var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
                 for (var i = 1; i <= numberOfPages; i++) {
