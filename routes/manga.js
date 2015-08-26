@@ -420,10 +420,31 @@ exports.pages = function(req, res) {
             res.send(images);
         } else { //manga.js mode
 
+
+            var imageLink = $('#comic_page').attr('src');
+
+
+            if (imageLink.indexOf('img0000') != -1) { //new manga.js
+
+                var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
+                var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
+                for (var i = 1; i <= numberOfPages; i++) {
+                    var page = numeral(i * .000001).format('.000000')
+                    page = page.substring(1);
+
+                    images.push(prefix + page + suffix);
+
+                } 
+                response.send(images);
+                return
+            }
+
+
+            // Old manga page
+
             res.set('Etag', 'stream');
             res.write('', 'utf-8'); //just to send a response to the client
 
-            var imageLink = $('#comic_page').attr('src');
             images.push(imageLink);
 
             var mangaAll = $('.moderation_bar ul li a').first();
