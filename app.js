@@ -39,20 +39,12 @@ app.use(require('method-override')());
 //app.use(app.router);
 //app.use(express.static(path.join(__dirname, 'public')));
 
-var DATABASE_URL = '';
+var DATABASE_URL = process.env.MONGO_URL;
 
 // development only
-if ('development' == app.get('env')) {
+if (DATABASE_URL == null || DATABASE_URL == '') {
     DATABASE_URL = 'mongodb://127.0.0.1:27017';
     app.use(require('errorhandler')());
-} else {
-    if (process.env.MONGOHQ_URL){
-        //production databse -> this is still a sandbox
-        DATABASE_URL = process.env.MONGOHQ_URL;
-    } else {
-        //this one is gonne be used for the dev server on heroku
-        DATABASE_URL = process.env.MONGOLAB_URI;
-    }
 }
 
 
