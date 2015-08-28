@@ -49,7 +49,7 @@ if (DATABASE_URL == null || DATABASE_URL == '') {
 
 
 // app.get('/', routes.index);
-app.get('/', test.updates);
+app.get('/', test.fetchUpdates);
 //app.get('/users', user.list);
 
 app.get('/read', manga.read);
