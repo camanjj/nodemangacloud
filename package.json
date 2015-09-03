@@ -1,5 +1,5 @@
 {
-  "name": "mangacloud",
+  "name": "mangaloop",
   "version": "0.0.10",
   "private": true,
   "scripts": {
@@ -24,7 +24,6 @@
     "newrelic": "1.14.7",
     "sugar": "~1.4.1"
   },
-  "subdomain": "mangacloud",
   "engines": {
     "node": "0.10.x"
   }
