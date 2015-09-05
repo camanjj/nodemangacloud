@@ -3,7 +3,7 @@
   "version": "0.0.10",
   "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "forever start app.js"
   },
   "author": "Cameron Jackson",
   "dependencies": {
@@ -26,6 +26,7 @@
     "forever": "~0.15.1"
   },
   "engines": {
-    "node": "0.10.x"
+    "node": "0.10.x",
+    "npm": "2.1.x"
   }
 }
