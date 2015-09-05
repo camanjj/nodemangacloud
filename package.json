@@ -25,6 +25,10 @@
     "sugar": "~1.4.1",
     "forever": "~0.15.1"
   },
+  "bin": {
+    "forever": "./bin/forever",
+    "foreverd": "./bin/foreverd"
+  },
   "engines": {
     "node": "0.10.x",
     "npm": "2.1.x"
