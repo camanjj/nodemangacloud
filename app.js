@@ -39,7 +39,7 @@ app.use(require('method-override')());
 //app.use(app.router);
 //app.use(express.static(path.join(__dirname, 'public')));
 
-var DATABASE_URL = process.env.MONGO_URL;
+var DATABASE_URL = process.env.MONGO_URI;
 
 // development only
 if (DATABASE_URL == null || DATABASE_URL == '') {
