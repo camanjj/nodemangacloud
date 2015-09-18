@@ -21,10 +21,16 @@ function setOptions(req, url, method) {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'accept-encoding': "gzip,deflate",
             'Connection': 'keep-alive',
-            'Cookie': cookies
+            // 'Cookie': cookies
         },
         gzip: true
     };
+
+    if (typeof cookies !== 'undefined') {
+        options.headers['Cookie'] = cookies
+    }
+
+
 
     //send back the options for the request in a promise
     return Promise.resolve(options); 
