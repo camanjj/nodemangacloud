@@ -47,7 +47,7 @@ exports.fetchUpdates = function (req, res) {
                 //gets the image element
                 var image = $(this).find('img').first();
                 mpi.imageLink = image.attr('src');
-                mpi.imageLink = "http://s0ivpv.cloudimage.io/s/crop/320x100/" + helper.getImageFromThumbnail(mpi.imageLink);
+                mpi.imageLink = mpi.imageLink;//"http://s0ivpv.cloudimage.io/s/crop/320x100/" + helper.getImageFromThumbnail(mpi.imageLink);
                 mpi.link = image.parent().attr('href');
                 mpi.title = $(this).find('td a').last().text();
                 mpi.mangaId = helper.getMangaIdFromString(mpi.link);
@@ -58,7 +58,7 @@ exports.fetchUpdates = function (req, res) {
                 var info = $(this).find('td a').first();
 
                 chapter.title = info.text();
-                chapter.link = info.attr('href');
+                chapter.link = baseUrl + info.attr('href');
 
                 chapter.language = self.find('td div').attr('title');
 
