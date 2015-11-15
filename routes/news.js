@@ -3,6 +3,44 @@
  */
 var models = require('./model');
 var Promise = require('promise');
+var Nightmare = require('nightmare');
+
+
+
+// var nightmare = Nightmare();
+// Promise.resolve(nightmare
+//   .goto('http://bato.to/reader#ab254c955fbaddb3')
+//   .wait(3000)
+//   .evaluate(function() {
+
+//     // var numberOfPages = jQuery('#page_select').first().find('option').length;
+//     // var title = document.title;
+
+//     if (false) {
+//       var images = [];
+//       jQuery('img').filter(function(i, el) {
+//             return jQuery(this).attr('alt') === title;
+//         }).each(function(i, el) {
+//             images.push(jQuery(this).attr('src'));
+//         });
+
+//         return images;
+//     } else {
+
+//       return document.querySelector("#comic_page").src;
+//     }
+
+//     // return document.querySelector("#comic_page").src;
+//   }
+// )).then(function(html) {
+//     console.log("result", html);
+//     return nightmare.end();
+// }).then(function(result) {
+
+// }, function(err) {
+//    console.log(err); // notice that `throw`ing in here doesn't work
+// });
+
 
 
 exports.createNews = function(request, response) {

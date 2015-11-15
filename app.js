@@ -11,6 +11,8 @@ var info = require('./routes/info');
 var test = require('./routes/manga');
 var news = require('./routes/news');
 
+var reader = require('./routes/reader')
+
 
 
 var http = require('http');
@@ -72,7 +74,7 @@ app.get('/info', test.info);
 app.get('/follows', test.follows);
 app.get('/all/follows', test.listFollows);
 app.get('/search', test.search);
-app.get('/pages', test.pages);
+app.get('/pages', reader.pages);
 
 
 //for news

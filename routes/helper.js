@@ -4,6 +4,13 @@ var zlib = require('zlib');
 var cheerio = require('cheerio');
 
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 function setOptions(req, url, method) {
 
     var cookies;
@@ -109,3 +116,4 @@ exports.requestp = requestp;
 exports.makePageFunction = makePageFunction;
 exports.getImageFromThumbnail = getRealImageFromThumbnail
 exports.getMangaIdFromString = getMangaIdFromString;
+exports.getParameterByName = getParameterByName;

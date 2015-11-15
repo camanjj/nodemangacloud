@@ -7,8 +7,11 @@ var Promise = require('promise');
 var async = require('async');
 var models = require('./model');
 var sugar = require('sugar');
+var phantom = require('phantom')
 
 var helper = require('./helper');
+var Nightmare = require('nightmare');
+var vo = require('vo');
 
 
 var baseUrl = "http://bato.to";
@@ -356,6 +359,18 @@ exports.search = function(req, res) {
 
 };
 
+
+function *run() {
+  var nightmare = Nightmare();
+  var title = yield nightmare
+    .goto('http://cnn.com')
+    .evaluate(function() {
+      return document.title;
+    });
+  console.log(title);
+  yield nightmare.end();
+}
+
 exports.pages = function(req, res) {
 
     if (!req.query.page) {
@@ -363,6 +378,63 @@ exports.pages = function(req, res) {
         res.send('Missing paramater page');
         return;
     }
+
+
+    // http://bato.to/areader?id=ab254c955fbaddb3&p=1
+
+    var id = getParameterByName('id', req.query.page);
+
+    var jsUrl = "http://bato.to/areader?id=" + id + "&p=1";
+ 
+
+    // var google = new Nightmare()
+    //   .useragent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36")
+    //   .goto(req.query.page)
+    //   .wait('#comic_page')
+    //   .evaluate(function() {
+    //     return document.getElementById('#comic_page').src;
+    //   })
+    //   .run(function( err, nightmare) {
+    //     console.log(err);
+    //     console.log(nightmare);
+    //     res.send();
+    //   })
+    //   .end()
+      
+
+      console.log(req.query.page);
+
+      var selector = "#comic_page"
+      vo(function* () {
+        var nightmare = Nightmare({ show: false });
+        var link = yield nightmare
+          .on('timeout', function(msg) {
+           return console.log(msg);
+          })
+          .goto(req.query.page)
+
+          .wait(4000)
+          // these one do not work
+          // look at: https://github.com/segmentio/nightmare/issues/251
+          // .wait('#comic_wrap')
+          // .wait(function() {
+          //     return nightmare.exists('#comic_page')
+          // })
+          .evaluate(function (selector) {
+
+              var comicPage = document.querySelector(selector).src
+              return comicPage;
+              
+          }, selector);
+        yield nightmare.end();
+        return link;
+      })(function (err, result) {
+        if (err) return console.log(err);
+        console.log(result);
+        // res.send()
+      });
+
+    return;
 
     var Manga = models.mangaModel;
     var query = Manga.findOne({
@@ -573,3 +645,10 @@ exports.follow = function(req, res) {
 
         });
 };
+
+function getParameterByName(name, url) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(url);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
