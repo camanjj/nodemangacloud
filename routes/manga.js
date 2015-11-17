@@ -61,7 +61,7 @@ exports.fetchUpdates = function (req, res) {
                 var info = $(this).find('td a').first();
 
                 chapter.title = info.text();
-                chapter.link = baseUrl + info.attr('href');
+                chapter.link = encodeURIComponent(baseUrl + info.attr('href'));
 
                 chapter.language = self.find('td div').attr('title');
 
