@@ -13,35 +13,41 @@ var helper = require('./helper');
 var Nightmare = require('nightmare');
 var vo = require('vo');
 
+var Xvfb = require('xvfb');
+
+
 
 
 function GetFirstPage(req, res) {
 
 
-  console.log('Get First Page');
-  console.log(req.query.page)
+    console.log('Get First Page');
+    console.log(req.query.page)
 
-  var nightmare = Nightmare();
-  return Promise.resolve(nightmare
-    .goto(req.query.page)
-    .wait(5000)
-    .evaluate(function() {
+    var xvfb = new Xvfb();
+    xvfb.startSync();
 
-        var numberOfPages = document.getElementById('page_select')
-        var title = document.title;
+    var nightmare = Nightmare();
+    return Promise.resolve(nightmare
+        .goto(req.query.page)
+        .wait(5000)
+        .evaluate(function() {
 
-        if (!numberOfPages) {
-            var images = [];
+            var numberOfPages = document.getElementById('page_select')
+            var title = document.title;
+
+            if (!numberOfPages) {
+                var images = [];
 
 
-            var tags = document.querySelectorAll("img[alt=\"" + title + "\"]")
-            var tag
-            for (var i = 0; i < tags.length; i++) {
-                images.push(tags[i].src);
-            }
+                var tags = document.querySelectorAll("img[alt=\"" + title + "\"]")
+                var tag
+                for (var i = 0; i < tags.length; i++) {
+                    images.push(tags[i].src);
+                }
 
-            return images;
-        } else {
+                return images;
+            } else {
             // $('#page_select').first().find('option').length;
             return {page: document.querySelector("#comic_page").src, count: numberOfPages.options.length};
         }
@@ -49,6 +55,7 @@ function GetFirstPage(req, res) {
     })).then(function(html) {
         console.log(html)
         nightmare.end();
+        xvfb.stopSync();
         return html;
     })
 
