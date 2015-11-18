@@ -24,8 +24,8 @@ function GetFirstPage(req, res) {
     console.log('Get First Page');
     console.log(req.query.page)
 
-    var xvfb = new Xvfb();
-    xvfb.startSync();
+    // var xvfb = new Xvfb();
+    // xvfb.startSync();
 
     var nightmare = Nightmare();
     return Promise.resolve(nightmare
@@ -55,7 +55,7 @@ function GetFirstPage(req, res) {
     })).then(function(html) {
         console.log(html)
         nightmare.end();
-        xvfb.stopSync();
+        // xvfb.stopSync();
         return html;
     })
 
