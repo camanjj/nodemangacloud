@@ -1,1 +1,1 @@
-web: DEBUG=nightmare xvfb-run ./node_modules/forever/bin/forever app.js
+web: xvfb-run ./node_modules/forever/bin/forever app.js
