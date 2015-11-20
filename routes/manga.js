@@ -10,8 +10,7 @@ var sugar = require('sugar');
 var phantom = require('phantom')
 
 var helper = require('./helper');
-var Nightmare = require('nightmare');
-var vo = require('vo');
+
 
 
 var baseUrl = "http://bato.to";

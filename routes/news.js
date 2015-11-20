@@ -3,7 +3,7 @@
  */
 var models = require('./model');
 var Promise = require('promise');
-var Nightmare = require('nightmare');
+// var Nightmare = require('nightmare');
 
 
 

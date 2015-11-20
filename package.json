@@ -2,9 +2,7 @@
   "name": "mangaloop",
   "version": "0.0.10",
   "private": true,
-  "scripts": {
-    "build": "npm install electron-prebuilt -g"
-  },
+  "scripts": {},
   "author": "Cameron Jackson",
   "dependencies": {
     "async": "~0.9.0",
@@ -14,25 +12,23 @@
     "express": "~4.11.0",
     "forever": "~0.15.1",
     "jade": "~1.9.0",
+    "jsdom": "^7.0.2",
     "method-override": "~2.3.1",
     "mongoose": "~3.8.21",
     "morgan": "~1.5.1",
-    "newrelic": "~1.14.7",
-    "nightmare": "^2.0.7",
     "numeral": "1.5.3",
     "phantom": "^0.8.3",
     "promise": "^7.0.4",
     "request": "~2.53.0",
     "serve-static": "~1.8.0",
     "sugar": "~1.4.1",
-    "vo": "^1.0.3",
-    "xvfb": "^0.2.2"
+    "xmlhttprequest": "^1.8.0"
   },
   "bin": {
     "forever": "./bin/forever",
     "foreverd": "./bin/foreverd"
   },
   "engines": {
-    "node": "0.12.x"
+    "node": "4.0"
   }
 }
