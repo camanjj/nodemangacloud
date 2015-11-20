@@ -7,7 +7,6 @@ var Promise = require('promise');
 var async = require('async');
 var models = require('./model');
 var sugar = require('sugar');
-var phantom = require('phantom')
 
 var helper = require('./helper');
 
