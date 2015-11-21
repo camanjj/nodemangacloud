@@ -82,34 +82,34 @@ exports.pages = function(req, res) {
     // http://bato.to/areader?id=ab254c955fbaddb3&p=1
 
 
-    var Manga = models.mangaModel;
-    var query = Manga.findOne({
-        'link': req.query.page
-    });
-    query.select('pages link');
+    // var Manga = models.mangaModel;
+    // var query = Manga.findOne({
+    //     'link': req.query.page
+    // });
+    // query.select('pages link');
 
-    //Check if the chapter is already saved in the database
-    query.exec().then(function(chapter) {
+    // //Check if the chapter is already saved in the database
+    // query.exec().then(function(chapter) {
 
-        if (chapter !== null && chapter !== undefined) {
-            res.send(chapter.pages);
-            return Promise.done(); //ends the promise tree
-        } else {
-            console.log('Not in databse');
-            // return GetFirstPage(req, res, function (result) {
-            //     console.log(result)
-            //     return new Promise(result)
-            // });
-            return Promise.resolve()
-        }
+    //     if (chapter !== null && chapter !== undefined) {
+    //         res.send(chapter.pages);
+    //         return Promise.done(); //ends the promise tree
+    //     } else {
+    //         console.log('Not in databse');
+    //         // return GetFirstPage(req, res, function (result) {
+    //         //     console.log(result)
+    //         //     return new Promise(result)
+    //         // });
+    //         return Promise.resolve()
+    //     }
 
-    }, function(error) {
+    // }, function(error) {
 
-        console.log(error);
-        if (error !== 'stop')
-            return helper.setOptions(req, req.query.page, 'GET');
+    //     console.log(error);
+    //     if (error !== 'stop')
+    //         return helper.setOptions(req, req.query.page, 'GET');
 
-    }).then(function() {
+    // }).then(function() {
 
         GetFirstPage(req, res, function (data) {
              
@@ -233,5 +233,5 @@ exports.pages = function(req, res) {
             }
         });
 
-    });
+    // });
 };

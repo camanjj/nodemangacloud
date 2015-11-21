@@ -20,7 +20,7 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var serveStatic = require('serve-static');
-var mongoose = require('mongoose');
+// var mongoose = require('mongoose');
 
 
 var app = express();
@@ -87,17 +87,17 @@ app.post('/news/urgent', news.newsSince);
 http.createServer(app).listen(app.get('port'), function() {
 
 
-    mongoose.connect(DATABASE_URL, function(err, res) {
-        if (err) {
-            console.log('ERROR connecting:' + err);
-        } else {
-            console.log('Succeeded connected');
-        }
-    });
-    var db = mongoose.connection;
-    db.on('error', function(error) {
-        console.log(error);
-    });
+    // mongoose.connect(DATABASE_URL, function(err, res) {
+    //     if (err) {
+    //         console.log('ERROR connecting:' + err);
+    //     } else {
+    //         console.log('Succeeded connected');
+    //     }
+    // });
+    // var db = mongoose.connection;
+    // db.on('error', function(error) {
+    //     console.log(error);
+    // });
 
 
     console.log('Express server listening on port ' + app.get('port'));

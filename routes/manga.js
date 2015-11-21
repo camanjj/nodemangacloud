@@ -158,10 +158,11 @@ exports.info = function(req, res) {
 
         var chapters = [];
 
-        //collects the chapters
-        $('.chapters_list tr[class!=header]').each(function(i, element) {
 
-            var chapter = new Object();
+        //collects the chapters
+        $('.chapters_list .chapter_row').each(function(i, element) {
+
+            var chapter = {};
 
             $(this).find('td').each(function(i, element) {
 
@@ -170,7 +171,7 @@ exports.info = function(req, res) {
                     case 0:
                         var title = $(this).find('a').first();
                         chapter.title = title.text().trim();
-                        chapter.link = title.attr('href');
+                        chapter.link = encodeURIComponent(title.attr('href'));
                         break;
                     case 1:
                         chapter.language = $(this).find('div').first().attr('title');
