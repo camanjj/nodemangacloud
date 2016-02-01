@@ -20,20 +20,22 @@ function GetFirstPage(req, res, callback) {
 
     console.log('Get First Page');
     console.log(req.query.page)
+    console.log(decodeURI(req.query.page))
 
-
-    var b = jsdom.env({
-        url: req.query.page, 
+    jsdom.env({
+        url: req.query.page,
         features : {
             FetchExternalResources : ['script', 'frame'],
             ProcessExternalResources : ['script', 'frame']
         },
-        scripts: ["https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"],
-        done: function(err, window) {
-            var $ = window.$;
+        scripts: ["https://code.jquery.com/jquery-2.2.0.min.js"],
+        done: function (err, window) {
+            // console.log(window.$)
+            var $ = window.$
 
 
             var id = req.query.page.split("#")[1];//"ab254c955fbaddb3";
+            console.log(id)
             $.get(baseUrl + "/areader?id="+id+"&p="+1, function(data) {
 
                 var html = cheerio.load(data);
@@ -45,6 +47,7 @@ function GetFirstPage(req, res, callback) {
                 if (!numberOfPages.val()) {
                     var images = [];
 
+                    console.log("Webtoon")
 
                     html("div[style=\"text-align:center;\"] img").each(function (i, element) {
                         images.push(html(this).attr('src'))
@@ -58,8 +61,9 @@ function GetFirstPage(req, res, callback) {
                     callback(data);
                 }
 
-              // console.log(data);
-            }).fail(function() {
+              console.log(data);
+            }).fail(function(error) {
+                console.log(error)
               console.log("Error");
             })
             .always(function() {
@@ -111,6 +115,7 @@ exports.pages = function(req, res) {
 
     // }).then(function() {
 
+        console.log("Get reader request")
         GetFirstPage(req, res, function (data) {
              
 
@@ -137,21 +142,24 @@ exports.pages = function(req, res) {
 
                 var imageLink = data.page;
 
-                res.set('Etag', 'stream');
-                res.write('', 'utf-8'); //just to send a response to the client
+                // res.set('Etag', 'stream');
+                // res.write('', 'utf-8'); //just to send a response to the client
 
                 if (imageLink.indexOf('img0000') != -1) { //new manga.js
 
                     console.log("New Manga");
 
                     var numberOfPages = data.count;
+                    var pages = []
 
                     var p = {
                         page: numberOfPages,
                         link: 'start'
                     };
-                    res.write(JSON.stringify(p) + '\n');
+                    // res.write(JSON.stringify(p) + '\n');
 
+                    console.log("About to loop")
+                    console.log(numberOfPages)
                     //get the prefix and suffix of the image url
                     var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
                     var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
@@ -160,15 +168,18 @@ exports.pages = function(req, res) {
                         page = page.substring(1);
 
                         link = (prefix + page + suffix);
+                        console.log(link)
+                        pages.push(link)
 
-                        res.write(JSON.stringify({
-                            page: i,
-                            link: link
-                        }) + '\n');
+                        // res.write(JSON.stringify({
+                        //     page: i,
+                        //     link: link
+                        // }) + '\n');
 
                     }
                     // response.send(images);
-                    res.end()
+                    console.log(pages)
+                    res.send(pages)
                     return
 
 
