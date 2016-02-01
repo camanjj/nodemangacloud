@@ -19,8 +19,6 @@ function GetFirstPage(req, res, callback) {
 
 
     console.log('Get First Page');
-    console.log(req.query.page)
-    console.log(decodeURI(req.query.page))
 
     jsdom.env({
         url: req.query.page,
@@ -30,7 +28,6 @@ function GetFirstPage(req, res, callback) {
         },
         scripts: ["https://code.jquery.com/jquery-2.2.0.min.js"],
         done: function (err, window) {
-            // console.log(window.$)
             var $ = window.$
 
 
@@ -41,7 +38,6 @@ function GetFirstPage(req, res, callback) {
                 var html = cheerio.load(data);
                 var numberOfPages = html('#page_select')
                 var title = $("head title").text()
-                console.log(title)
 
 
                 if (!numberOfPages.val()) {
@@ -61,9 +57,7 @@ function GetFirstPage(req, res, callback) {
                     callback(data);
                 }
 
-              console.log(data);
             }).fail(function(error) {
-                console.log(error)
               console.log("Error");
             })
             .always(function() {
@@ -86,35 +80,6 @@ exports.pages = function(req, res) {
     // http://bato.to/areader?id=ab254c955fbaddb3&p=1
 
 
-    // var Manga = models.mangaModel;
-    // var query = Manga.findOne({
-    //     'link': req.query.page
-    // });
-    // query.select('pages link');
-
-    // //Check if the chapter is already saved in the database
-    // query.exec().then(function(chapter) {
-
-    //     if (chapter !== null && chapter !== undefined) {
-    //         res.send(chapter.pages);
-    //         return Promise.done(); //ends the promise tree
-    //     } else {
-    //         console.log('Not in databse');
-    //         // return GetFirstPage(req, res, function (result) {
-    //         //     console.log(result)
-    //         //     return new Promise(result)
-    //         // });
-    //         return Promise.resolve()
-    //     }
-
-    // }, function(error) {
-
-    //     console.log(error);
-    //     if (error !== 'stop')
-    //         return helper.setOptions(req, req.query.page, 'GET');
-
-    // }).then(function() {
-
         console.log("Get reader request")
         GetFirstPage(req, res, function (data) {
              
@@ -131,11 +96,9 @@ exports.pages = function(req, res) {
                 //     res.send(500, 'This sometimes occurs when a recetly added manga does not have any pages in the reader. I would try again later');
                 //     return;
                 // }
-
-                console.log("Webtoon")
-                console.log(data)
-
                 images = data;
+                images.pop() // remove the last image b/c its an ad
+                console.log(images)
                 res.send(images);
             } else { //manga.js mode
 
@@ -152,14 +115,6 @@ exports.pages = function(req, res) {
                     var numberOfPages = data.count;
                     var pages = []
 
-                    var p = {
-                        page: numberOfPages,
-                        link: 'start'
-                    };
-                    // res.write(JSON.stringify(p) + '\n');
-
-                    console.log("About to loop")
-                    console.log(numberOfPages)
                     //get the prefix and suffix of the image url
                     var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
                     var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
@@ -168,19 +123,14 @@ exports.pages = function(req, res) {
                         page = page.substring(1);
 
                         link = (prefix + page + suffix);
-                        console.log(link)
                         pages.push(link)
 
-                        // res.write(JSON.stringify({
-                        //     page: i,
-                        //     link: link
-                        // }) + '\n');
-
+                     
                     }
-                    // response.send(images);
+
                     console.log(pages)
                     res.send(pages)
-                    return
+                    
 
 
 
