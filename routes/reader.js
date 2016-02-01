@@ -29,7 +29,7 @@ function GetFirstPage(req, res, callback) {
         scripts: ["https://code.jquery.com/jquery-2.2.0.min.js"],
         done: function (err, window) {
 
-            console.log(err)
+            console.log("This is the error for jsom: " + err)
             var $ = window.$
 
 
