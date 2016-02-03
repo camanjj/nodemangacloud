@@ -171,7 +171,7 @@ exports.info = function(req, res) {
                     case 0:
                         var title = $(this).find('a').first();
                         chapter.title = title.text().trim();
-                        chapter.link = encodeURIComponent(title.attr('href'));
+                        chapter.link = title.attr('href');
                         break;
                     case 1:
                         chapter.language = $(this).find('div').first().attr('title');
