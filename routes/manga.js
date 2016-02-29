@@ -321,7 +321,9 @@ exports.listFollows = function(req, res){
 exports.search = function(req, res) {
 
     var term = req.query.term;
-    var url = util.format(baseUrl + '/search?name=%s&name_cond=c&dosubmit=Search', term);
+    var query = req.originalUrl
+    console.log(query)
+    var url = util.format(baseUrl + query);
 
     helper.setOptions(req, url, 'GET').then(helper.requestp).then(function(data) {
 
