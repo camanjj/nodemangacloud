@@ -75,6 +75,7 @@ app.get('/follows', test.follows);
 app.get('/all/follows', test.listFollows);
 app.get('/search', test.search);
 app.get('/pages', reader.pages);
+app.get('/popular', test.popular);
 
 
 //for news

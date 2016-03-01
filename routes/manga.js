@@ -418,6 +418,46 @@ exports.follow = function(req, res) {
         });
 };
 
+
+exports.popular = function(req, res) {
+
+    helper.setOptions(req, baseUrl, 'GET').then(helper.requestp).then(function(data) {
+
+        var $ = cheerio.load(data.toString());
+
+        var manga = []
+
+        $('.hfeed li.hentry').each(function(i, element) {
+            
+
+            var title = $(this).find("div img").first().attr("alt")
+            var link = $(this).find("div a").first().attr("href")
+            var imageLink = $(this).find("div img").first().attr("src")
+            var mangaId = helper.getMangaIdFromString(link);
+
+
+            var mpi = {}
+            mpi.title = title
+            mpi.link = link
+            mpi.imageLink = imageLink
+            mpi.mangaId = mangaId
+
+            manga.push(mpi)
+
+        })
+
+        res.send(manga);
+
+    }, function(err) {
+        res.send(500, {
+            'error': "error connecting to batoto"
+        });
+        console.error("%s; %s", err.message, url);
+        console.log("%j", err.res.statusCode);
+    });
+}
+
+
 function getParameterByName(name, url) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
