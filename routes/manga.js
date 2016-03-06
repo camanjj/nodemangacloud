@@ -433,6 +433,7 @@ exports.popular = function(req, res) {
             var title = $(this).find("div img").first().attr("alt")
             var link = $(this).find("div a").first().attr("href")
             var imageLink = $(this).find("div img").first().attr("src")
+            imageLink = helper.getImageFromThumbnail(imageLink)
             var mangaId = helper.getMangaIdFromString(link);
 
 
