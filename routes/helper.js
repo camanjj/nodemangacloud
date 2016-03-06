@@ -99,7 +99,7 @@ function handleImage(image, resp, page, callback) {
 }
 
 function getRealImageFromThumbnail(link){
-    var baseImageUrl = 'http://img.batoto.net/forums/uploads/';
+    var baseImageUrl = 'http://img.bato.to/forums/uploads/';
 
     var arr = link.split('/');
     var imageToken = arr[arr.length-1];
