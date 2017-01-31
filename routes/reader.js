@@ -26,6 +26,7 @@ function GetFirstPage(req, res, callback) {
             FetchExternalResources : ['script', 'frame'],
             ProcessExternalResources : ['script', 'frame']
         },
+        headers: {'Cookie': req.headers.cookie},
         scripts: ["https://code.jquery.com/jquery-2.2.0.min.js"],
         done: function (err, window) {
 
@@ -88,16 +89,9 @@ exports.pages = function(req, res) {
 
             var images = [];
 
-            if (data instanceof Array) { //webtoon mode or occurs when the there are currently no pages in the chapter
+            if (data instanceof Array) { 
 
-                // var chapter_select = $('select[name=chapter_select]').first();
-
-                // //this occurs when the manga page does not exist
-                // //for example this occurs when the link exist but the manga is put on hold
-                // if (chapter_select.html() === null) {
-                //     res.send(500, 'This sometimes occurs when a recetly added manga does not have any pages in the reader. I would try again later');
-                //     return;
-                // }
+                //webtoon mode or occurs when the there are currently no pages in the chapter     
                 images = data;
                 images.pop() // remove the last image b/c its an ad
                 console.log(images)
@@ -106,10 +100,6 @@ exports.pages = function(req, res) {
 
 
                 var imageLink = data.page;
-
-                // res.set('Etag', 'stream');
-                // res.write('', 'utf-8'); //just to send a response to the client
-
                 if (imageLink.indexOf('img0000') != -1) { //new manga.js
 
                     console.log("New Manga");
