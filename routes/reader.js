@@ -1,190 +1,77 @@
-var cheerio = require('cheerio');
-var request = require('request');
-var zlib = require('zlib');
-var numeral = require('numeral');
-var util = require('util');
-var Promise = require('promise');
-var async = require('async');
-var models = require('./model');
-var sugar = require('sugar');
-var jsdom = require("jsdom");
+const cheerio = require('cheerio');
+const request = require('request');
+const models = require('./model');
 
-var helper = require('./helper');
+const baseUrl = "https://bato.to";
 
-
-var baseUrl = "http://bato.to";
-
-
-function GetFirstPage(req, res, callback) {
-
-
-    console.log('Get First Page');
-
-    jsdom.env({
-        url: req.query.page,
-        features : {
-            FetchExternalResources : ['script', 'frame'],
-            ProcessExternalResources : ['script', 'frame']
-        },
-        headers: {'Cookie': req.headers.cookie},
-        scripts: ["https://code.jquery.com/jquery-2.2.0.min.js"],
-        done: function (err, window) {
-
-            console.log("This is the error for jsom: " + err)
-            var $ = window.$
-
-
-            var id = req.query.page.split("#")[1];//"ab254c955fbaddb3";
-            console.log(id)
-            $.get(baseUrl + "/areader?id="+id+"&p="+1, function(data) {
-
-                var html = cheerio.load(data);
-                var numberOfPages = html('#page_select')
-                var title = $("head title").text()
-
-
-                if (!numberOfPages.val()) {
-                    var images = [];
-
-                    console.log("Webtoon")
-
-                    html("div[style=\"text-align:center;\"] img").each(function (i, element) {
-                        images.push(html(this).attr('src'))
-                    })
-
-                    callback(images);
-                } else {
-                    // $('#page_select').first().find('option').length;
-                    console.log("Manga Page")
-                    var data = {page: html("#comic_page").attr('src'), count: numberOfPages.first().children().length}
-                    callback(data);
-                }
-
-            }).fail(function(error) {
-              console.log("Error");
-            })
-            .always(function() {
-              console.log("Finished");
-            });
+function getMangaPage(pageUrl, cookies) {
+    
+    let options = (url) => { return {
+        url: pageUrl,
+        headers: {
+            Cookie: cookies,
+            Referer: baseUrl+"/reader",
+            Host: "bato.to",
+            "User-Agent": "Paw/3.1.5 (Macintosh; OS X/10.13.1) GCDHTTPRequest"
         }
+    }}
+
+    return new Promise((resolve, reject) => {
+        request(options(pageUrl), (err, resp, body) => {
+            if (!err)
+                resolve(body)
+            else
+                reject(err);
+    
+        })
+    })
+}
+
+exports.pages = function(req, res, callback) {
+
+    const id = req.query.page.split("#")[1];//"ab254c955fbaddb3";
+    let pageUrl = baseUrl + "/areader?id="+id+"&p="+1;
+    
+    getMangaPage(pageUrl, req.headers.cookie).then(body => {
+
+        const $ = cheerio.load(body);
+        let pageSelect = $("#page_select");
+        let images = [];
+        if (pageSelect.length > 0) {
+            // manga mode
+            console.log("Manga Mode")
+
+            
+            let select = pageSelect.first();
+            let pageCount = select.children().length
+            
+            let promises = [[1,$("#comic_page").attr('src')]];
+            for (let i = 2; i <= pageCount; i++) {
+                let curUrl = baseUrl + "/areader?id="+id+"&p="+i;
+                let promise = getMangaPage(curUrl, req.headers.cookie).then(body => {
+                    const html = cheerio.load(body);
+                    return [i, html("#comic_page").attr('src')];
+                })
+                promises.push(promise)
+            }
+
+            return Promise.all(promises).then(arr => {
+                console.log(arr)
+                return arr.sort((a,b) => {return a[0]-b[0]}).map(e => e[1]);
+            })
+
+        } else {
+            // webtoon mode
+            $("div[style=\"text-align:center;\"] img").each(function (i, element) {
+                images.push($(this).attr('src'))
+            })
+            return images;
+        }
+
+    }).then(images => {
+        res.send(images);
+    }).catch(err => {
+        console.log(err);
+        res.sendStatus(400);
     })
 } 
-
-
-exports.pages = function(req, res) {
-
-    if (!req.query.page) {
-        res.status(400);
-        res.send('Missing paramater page');
-        return;
-    }
-
-    // this is the format for the url to get the html for the first page
-    // http://bato.to/areader?id=ab254c955fbaddb3&p=1
-
-
-        console.log("Get reader request")
-        GetFirstPage(req, res, function (data) {
-             
-
-            var images = [];
-
-            if (data instanceof Array) { 
-
-                //webtoon mode or occurs when the there are currently no pages in the chapter     
-                images = data;
-                images.pop() // remove the last image b/c its an ad
-                console.log(images)
-                res.send(images);
-            } else { //manga.js mode
-
-
-                var imageLink = data.page;
-                if (imageLink.indexOf('img0000') != -1) { //new manga.js
-
-                    console.log("New Manga");
-
-                    var numberOfPages = data.count;
-                    var pages = []
-
-                    //get the prefix and suffix of the image url
-                    var prefix = imageLink.substring(0, imageLink.lastIndexOf('img') + 3);
-                    var suffix = imageLink.substring(imageLink.lastIndexOf('.'));
-                    for (var i = 1; i <= numberOfPages; i++) {
-                        var page = numeral(i * .000001).format('.000000')
-                        page = page.substring(1);
-
-                        link = (prefix + page + suffix);
-                        pages.push(link)
-
-                     
-                    }
-
-                    console.log(pages)
-                    res.send(pages)
-                    
-
-
-
-
-                } else {
-
-
-                    // Old manga page
-
-                    
-
-                    images.push(imageLink);
-
-                    var mangaAll = $('.moderation_bar ul li a').first();
-                    var link = mangaAll.attr('href');
-                    var mId = link.substr(link.lastIndexOf('r'));
-                    var mName = mangaAll.text();
-
-                    var promises = [];
-                    $('#page_select').first().find('option').each(function(e, el) {
-                        var url = $(this).val();
-                        var func = helper.makePageFunction(url, res, e + 1);
-                        promises.push(func);
-                    });
-
-                    //inital response indicating the amount of pages
-                    var p = {
-                        page: promises.length,
-                        link: 'start'
-                    };
-                    res.write(JSON.stringify(p) + '\n');
-
-                    // get the pages asynchronisly 4 at a time
-                    async.parallelLimit(promises, 4, function(err, results) {
-
-                        if (err === undefined) {
-
-                            // Add the manga to the databse if there was no error
-
-                            var manga = new Manga({
-                                mangaId: mId,
-                                mangaName: mName,
-                                link: req.query.page,
-                                pages: results
-                            });
-
-                            manga.save();
-
-                            //end the response
-                            res.end();
-
-                        } else {
-                            // There was an error getting the manga pages
-                            console.log(err);
-                            res.end();
-                        }
-
-                    });
-                }
-
-            }
-        });
-
-    // });
-};
